@@ -16,7 +16,7 @@ class positionsModel:
     def _createModel():
         """Create and set up the model."""
         tableModel = QSqlTableModel()
-        tableModel.setTableModel("positions")
+        tableModel.setTable("positions")
         #tableModel.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
         tableModel.select()
         headers = ("x", "y", "dx", "dy")

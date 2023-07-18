@@ -5,18 +5,20 @@
 import sys
 from PySide6.QtWidgets import QApplication
 
-from .database import createConnection
-from .views import Window
+from database import createConnection
+from views import Window
 
-def main():
-    """QPortal main function."""
-    # Create the application 
-    app = QApplication(sys.argv)
-    # Connect to the database before creating any window
-    if not createConnection("positioning"):
-        sys.exit(1)
-    # Create the main window if the connection succeeded
-    win = Window()
-    win.show()
-    # Run the event loop
-    sys.exit(app.exec())
+
+"""QPortal main function."""
+# Create the application 
+app = QApplication(sys.argv)
+# Connect to the database before creating any window
+if not createConnection("positions.sqlite"):
+    print("In create connection...")
+    sys.exit(1)
+# Create the main window if the connection succeeded
+win = Window()
+win.show()
+# Run the event loop
+sys.exit(app.exec())
+

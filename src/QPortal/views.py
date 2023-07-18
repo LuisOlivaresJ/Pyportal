@@ -10,7 +10,6 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import(
     QFileDialog,
     QHBoxLayout,
-    QHBoxLayout,
     QMainWindow,
     QMessageBox,
     QPushButton,
@@ -21,34 +20,35 @@ from PySide6.QtWidgets import(
 
 import os
 from pylinac import FieldAnalysis, Centering
-from .model import PositionsModel
+from model import positionsModel
 
 class Window(QMainWindow):
     """Main Window."""
-    def __init(self, parent = None):
+    def __init__(self, parent = None):
         """Initializer."""
         super().__init__(parent)
         self.setWindowTitle("QPortal Positioning.")
-        #self.resize()
+        self.resize(550, 250)
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
         self.layout = QHBoxLayout()
+        self.centralWidget.setLayout(self.layout)
         
-        self.positionModel = PositionsModel()
+        self.positionModel = positionsModel()
         self.setupUI()
 
     def setupUI(self):
         """Setup the main window's GUI."""
         # Create the table view widget
         self.table = QTableView()
-        self.table.setModel(self.positionModel)
+        self.table.setModel(self.positionModel.model)
         #self.table.set
         self.table.resizeColumnsToContents()
         # Create buttons
         self.addButton = QPushButton("Add...")
         self.addButton.clicked.connect(self.openAddDialog)
         self.deleteButton = QPushButton("Delete")
-        self.deleteButton.clicked.connect(self.deleteResults)
+        self.deleteButton.clicked.connect(self.deleteRow)
         self.exportButton = QPushButton("Export")
         self.exportButton.clicked.connect(self.exportResults)
         self.clearAllButton = QPushButton("Clear All")
@@ -60,9 +60,11 @@ class Window(QMainWindow):
         layout.addWidget(self.deleteButton)
         layout.addWidget(self.exportButton)
         layout.addStretch()
-        layout.addLayout(self.clearAllButton)
+        layout.addWidget(self.clearAllButton)
+
         self.layout.addLayout(layout)
         self.layout.addWidget(self.table)
+
 
     def openAddDialog(self):
         """Open the add image dialog."""
@@ -79,8 +81,8 @@ class Window(QMainWindow):
         self.positionModel.addPosition(positions)
         self.table.resizeColumnsToContents()
 
-    def deleteContact(self):
-        """Delete the selected contact from the database."""
+    def deleteRow(self):
+        """Delete the selected row from the database."""
         row = self.table.currentIndex().row()
         if row < 0:
             return
@@ -106,3 +108,6 @@ class Window(QMainWindow):
         if messageBox == QMessageBox.StandardButton.Ok:
             self.positionModel.clearAll()
 
+    def exportResults(self):
+        """Export database."""
+        return
