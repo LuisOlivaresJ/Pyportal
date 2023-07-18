@@ -27,7 +27,7 @@ class Window(QMainWindow):
     def __init__(self, parent = None):
         """Initializer."""
         super().__init__(parent)
-        self.setWindowTitle("QPortal Positioning.")
+        self.setWindowTitle("QPortal Positioning")
         self.resize(550, 250)
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)

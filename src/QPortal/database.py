@@ -25,6 +25,7 @@ def createConnection(databaseName):
 
         )
         return False
+    print("SQL Connection Successfully Opened!")
     _createPositionsTable()
     return True
 
@@ -34,6 +35,7 @@ def _createPositionsTable():
     return createTableQuery.exec(
         """
         Create TABLE IF NOT EXISTS positions (
+            date DATE NOT NULL,
             x  REAL NOT NULL,
             y  REAL NOT NULL,
             dx  REAL NOT NULL,
