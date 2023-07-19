@@ -34,14 +34,14 @@ class Window(QMainWindow):
         self.layout = QHBoxLayout()
         self.centralWidget.setLayout(self.layout)
         
-        self.positionModel = positionsModel()
+        self.positionsModel = positionsModel()
         self.setupUI()
 
     def setupUI(self):
         """Setup the main window's GUI."""
         # Create the table view widget
         self.table = QTableView()
-        self.table.setModel(self.positionModel.model)
+        self.table.setModel(self.positionsModel.model)
         #self.table.set
         self.table.resizeColumnsToContents()
         # Create buttons
@@ -78,7 +78,7 @@ class Window(QMainWindow):
         distance_from_beam_center_to_panel_center_Y = results.geometric_center_index_x_y[1]/my_img.image.dpmm - results.beam_center_index_x_y[1]/my_img.image.dpmm
         positions = [distance_from_beam_center_to_panel_center_X, distance_from_beam_center_to_panel_center_Y]
 
-        self.positionModel.addPosition(positions)
+        self.positionsModel.addPosition(positions)
         self.table.resizeColumnsToContents()
 
     def deleteRow(self):
@@ -94,7 +94,7 @@ class Window(QMainWindow):
         )
 
         if messageBox == QMessageBox.StandardButton.Ok:
-            self.positionModel.deleteRow(row)
+            self.positionsModel.deleteRow(row)
 
     def clearAll(self):
         """Remove all positions from the database."""
@@ -106,7 +106,7 @@ class Window(QMainWindow):
         )
 
         if messageBox == QMessageBox.StandardButton.Ok:
-            self.positionModel.clearAll()
+            self.positionsModel.clearAll()
 
     def exportResults(self):
         """Export database."""

@@ -30,7 +30,7 @@ def createConnection(databaseName):
     return True
 
 def _createPositionsTable():
-    """Create the contacts table in the database."""
+    """Create the positions table in the database."""
     createTableQuery = QSqlQuery()
     return createTableQuery.exec(
         """
@@ -38,8 +38,8 @@ def _createPositionsTable():
             date DATE NOT NULL,
             x  REAL NOT NULL,
             y  REAL NOT NULL,
-            dx  REAL NOT NULL,
-            dy  REAL NOT NULL  
+            Fx  REAL NOT NULL,
+            Fy  REAL NOT NULL  
         )
         """
     )
