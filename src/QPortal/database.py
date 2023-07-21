@@ -14,14 +14,14 @@ def createConnection(databaseName):
         databaseName holds the name or path to the physical SQLite database file in your file system.
     """
 
-    connection = QSqlDatabase.addDatabase("QSQLITE")
-    connection.setDatabaseName(databaseName)
+    con = QSqlDatabase.addDatabase("QSQLITE")
+    con.setDatabaseName(databaseName)
 
-    if not connection.open():
+    if not con.open():
         QMessageBox.warning(
             None,
             "QPortal",
-            f"Database Error: {connection.lastError().text()}",
+            f"Database Error: {con.lastError().text()}",
 
         )
         return False
@@ -34,12 +34,10 @@ def _createPositionsTable():
     createTableQuery = QSqlQuery()
     return createTableQuery.exec(
         """
-        Create TABLE IF NOT EXISTS positions (
+        CREATE TABLE IF NOT EXISTS positions (
             date DATE NOT NULL,
             x  REAL NOT NULL,
-            y  REAL NOT NULL,
-            Fx  REAL NOT NULL,
-            Fy  REAL NOT NULL  
+            y  REAL NOT NULL
         )
         """
     )
