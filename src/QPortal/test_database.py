@@ -26,6 +26,62 @@ createTableQuery.exec(
     """
 )
 print(con.tables())
+print(con.isOpen())
+
+#Create a query for later execution using .prepare()
+insertQuery = QSqlQuery(db)
+insertQuery.prepare(
+    """
+    INSERT INTO contacts (
+        name,
+        job,
+        email
+    )
+    VALUES (?,?,?)
+    """
+)
+
+# sample data
+data = [
+    ("Joe","Senior","joe@example"),
+    ("Lara", "Project", "lara@example"),
+]
+
+# Use .addBindingValue() to insert data
+for name, job, email in data:
+    insertQuery.addBindValue(name)
+    insertQuery.addBindValue(job)
+    insertQuery.addBindValue(email)
+    insertQuery.exec()
+
+
+"""
+data2 = [
+    ("Luis", "Physicist", "cucei@example"),
+    ("Alfonso", "Medical", "alfonso@cucei")
+]
+
+query2 = QSqlQuery()
+query2.prepare(
+    "
+    INSERT INTO contacts(
+    name,
+    job,
+    email
+    )
+    VALUES(?,?,?)
+    "
+)
+
+for row in data2:
+    i = 0
+    for item in row:
+        query2.bindValue(i, item)
+        i += 1
+    query2.exec()
+
+"""
+
 #print(con.tables())
 #print(con.isOpen())
 #date = "2023-01-15"

@@ -16,6 +16,7 @@ def createConnection(databaseName):
 
     con = QSqlDatabase.addDatabase("QSQLITE")
     con.setDatabaseName(databaseName)
+    #db = QSqlDatabase.database('db')
 
     if not con.open():
         QMessageBox.warning(
@@ -35,7 +36,7 @@ def _createPositionsTable():
     return createTableQuery.exec(
         """
         CREATE TABLE IF NOT EXISTS positions (
-            date DATE NOT NULL,
+            date VARCHAR(40) NOT NULL,
             x  REAL NOT NULL,
             y  REAL NOT NULL
         )

@@ -26,10 +26,11 @@ class positionsModel:
     
     def addPosition(self, position):
         """Add a position to the database."""
+        print(position)
         rows = self.model.rowCount()
         self.model.insertRows(rows, 1)
         for column, field in enumerate(position):
-            self.model.setData(self.model.index(rows, column + 1), field)
+            self.model.setData(self.model.index(rows, column), field)
         self.model.submitAll()
         self.model.select()
 

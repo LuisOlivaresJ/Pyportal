@@ -13,6 +13,9 @@ from views import Window
 # Create the application 
 app = QApplication(sys.argv)
 # Connect to the database before creating any window
+#db = createConnection("positions.sqlite")
+#if not db.isOpen():
+#    sys.exit(1)
 if not createConnection("positions.sqlite"):
     sys.exit(1)
 # Create the main window if the connection succeeded

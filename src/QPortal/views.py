@@ -6,7 +6,6 @@ are responsible for displaying the data
 to the user.
 """
 
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import(
     QFileDialog,
     QHBoxLayout,
@@ -17,8 +16,6 @@ from PySide6.QtWidgets import(
     QVBoxLayout,
     QWidget,
 )
-
-import os
 from pylinac import FieldAnalysis, Centering
 from model import positionsModel
 
@@ -45,7 +42,7 @@ class Window(QMainWindow):
         #self.table.set
         self.table.resizeColumnsToContents()
         # Create buttons
-        self.addButton = QPushButton("Add...")
+        self.addButton = QPushButton("Open...")
         self.addButton.clicked.connect(self.openAddDialog)
         self.deleteButton = QPushButton("Delete")
         self.deleteButton.clicked.connect(self.deleteRow)
@@ -67,7 +64,7 @@ class Window(QMainWindow):
 
 
     def openAddDialog(self):
-        """Open the add image dialog."""
+        """Open an image dialog."""
         file_name, _ = QFileDialog.getOpenFileName()
         #_ , extension = os.path.splitext(self.last_file_name)
         my_img = FieldAnalysis(path = file_name)
@@ -76,7 +73,11 @@ class Window(QMainWindow):
 
         distance_from_beam_center_to_panel_center_X = results.geometric_center_index_x_y[0]/my_img.image.dpmm - results.beam_center_index_x_y[0]/my_img.image.dpmm
         distance_from_beam_center_to_panel_center_Y = results.geometric_center_index_x_y[1]/my_img.image.dpmm - results.beam_center_index_x_y[1]/my_img.image.dpmm
-        positions = [distance_from_beam_center_to_panel_center_X, distance_from_beam_center_to_panel_center_Y]
+        date_ = my_img.image.date_created(format = "%Y-%m-%d")
+        positions = [date_, 
+                     f"{distance_from_beam_center_to_panel_center_X:0.2f}", 
+                     f"{distance_from_beam_center_to_panel_center_Y:0.2f}"
+                     ]
 
         self.positionsModel.addPosition(positions)
         self.table.resizeColumnsToContents()
@@ -90,7 +91,7 @@ class Window(QMainWindow):
             self,
             "Warning!",
             "Do you want to remove the selected rwo?",
-            QMessageBox.StandadButton.Ok | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
         )
 
         if messageBox == QMessageBox.StandardButton.Ok:
