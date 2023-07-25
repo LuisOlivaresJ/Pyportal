@@ -54,7 +54,7 @@ def _isEmpty():
     """
     isEmptyQuery = QSqlQuery()
     isEmptyQuery.exec("SELECT date, sid, x, y FROM positions")
-    if isEmptyQuery.record().isEmpty():
+    if not isEmptyQuery.first():
         reference_file_name, _ = QFileDialog.getOpenFileName(caption = "Select a reference image.", dir="/home")
         date, sid, x, y = getXY(reference_file_name)
         print(
