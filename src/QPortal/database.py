@@ -53,6 +53,7 @@ def _isEmpty():
     used to get the reference portal position, saving it as the first row. Otherwise, returns 
     """
     isEmptyQuery = QSqlQuery()
+    isEmptyQuery.exec("SELECT date, sid, x, y FROM positions")
     if isEmptyQuery.record().isEmpty():
         reference_file_name, _ = QFileDialog.getOpenFileName(caption = "Select a reference image.", dir="/home")
         date, sid, x, y = getXY(reference_file_name)
