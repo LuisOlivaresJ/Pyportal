@@ -13,6 +13,8 @@ Determine the reproducibility of EPID positioning at gantry zero by three EPID d
 epid_positioning_algorithm.py shows the pylinac implementation to be used for distance calculation.
 SQLite is going to be used for data storage. [This is](https://github.com/LuisOlivaresJ/GUI_RealPython/tree/main/rpcontacts_project) a GUI example using PyQt6.
 
+To do: lectura de 3 archivos, cálculo de XY, comparación con X y Y de referencia. Graficar mostrar resultado.
+
 ## EPID positioning with gantry rotation
 
   Tolerance: Vendor specification or ≤2 mm
