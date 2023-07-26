@@ -3,25 +3,24 @@
 """This module is used for common operations with DICOM portal images."""
 
 from pylinac import FieldAnalysis, Centering
-from datetime import date
 
-def getXY(file):
+def getXY(path):
     """Get the distance (mm) in x and y directions of the detector's center with respect to the beam's center.
     
     Parameters
     ----------
 
-    file : str
-        File name
+    path : str
+        path to the file
     
     Returns
     -------
 
     tuple
-        (Date created, distance in x, distance in y)
+        (Date created (str), SID (float), Gantry angle (float), distance in x (float), distance in y (float))
 
     """
-    img = FieldAnalysis(path = file)
+    img = FieldAnalysis(path = path)
     img.analyze(centering = Centering.GEOMETRIC_CENTER)
     results = img.results_data()
 
@@ -42,3 +41,4 @@ def getXY(file):
             distance_from_beam_center_to_panel_center_X,
             distance_from_beam_center_to_panel_center_Y
             )
+

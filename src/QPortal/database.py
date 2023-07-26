@@ -4,6 +4,8 @@ from PySide6.QtWidgets import QMessageBox, QFileDialog
 from PySide6.QtSql import QSqlDatabase
 from PySide6.QtSql import QSqlQuery
 
+import sys
+
 from tools import getXY
 
 def createConnection(databaseName):
@@ -89,3 +91,65 @@ def _isEmpty():
 
     else:
         return
+
+def get_reference_data():
+    """
+    Get the reference positions from the database
+
+    """
+    refCon = QSqlDatabase.addDatabase("QSQLITE", "refCon")
+    refCon.setDatabaseName("positions.sqlite")
+    db = QSqlDatabase.database("refCon")
+    if not refCon.open():
+        print(f"Reference database error: {refCon.lastError().databaseText()}")
+        sys.exit(1)
+    
+    getRefQuery = QSqlQuery(db)
+    getRefQuery.exec("SELECT date, sid, gantry_angle, x, y FROM positions")
+    #while getRefQuery.next():
+    getRefQuery.first()
+
+    referenceData = {"Date": getRefQuery.value("date"), 
+                     "SID": getRefQuery.value("sid"), 
+                     "G": getRefQuery.value("gantry_angle"), 
+                     "x": getRefQuery.value("x"), 
+                     "y": getRefQuery.value("y")
+                     }
+    
+    getRefQuery.finish()
+    refCon.close()
+
+    return referenceData
+
+def insertData(data):
+    insertCon = QSqlDatabase.addDatabase("QSQLITE", "insertCon")
+    insertCon.setDatabaseName("positions.sqlite")
+    db = QSqlDatabase.database("insertCon")
+    if not insertCon.open():
+        print(f"Insert database error: {insertCon.lastError().databaseText()}")
+        sys.exit(1)
+
+    insertQuery = QSqlQuery(db)
+    insertQuery.prepare(
+        """
+        INSERT INTO positions (
+            name,
+            job,
+            email
+        )
+        VALUES (?,?,?)
+        """
+    )
+
+    # sample data
+    data = [
+        ("Joe","Senior","joe@example"),
+        ("Lara", "Project", "lara@example"),
+    ]
+
+    # Use .addBindingValue() to insert data
+    for name, job, email in data:
+        insertQuery.addBindValue(name)
+        insertQuery.addBindValue(job)
+        insertQuery.addBindValue(email)
+        insertQuery.exec()
