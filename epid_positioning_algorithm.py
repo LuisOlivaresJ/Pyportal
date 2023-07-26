@@ -21,6 +21,9 @@ print(f"X: {distance_from_beam_center_to_panel_center_X:0.1f} mm, Y: {distance_f
 
 print("Distance from radiation machine source to image plane (in mm) along radiation beam axis.")
 print(my_img.image.metadata['RTImageSID'].value)
+
+print("Gantry angle")
+print(my_img.image.metadata['GantryAngle'].value)
 # The Dots-per-mm of the image, defined at isocenter. E.g. if an EPID image is taken at 150cm SID, the dpmm will scale back to 100cm.
 # my_img.image.dpmm
 

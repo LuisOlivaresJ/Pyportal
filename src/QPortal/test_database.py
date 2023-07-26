@@ -55,6 +55,27 @@ for name, job, email in data:
     insertQuery.exec()
 
 
+# Database using pandas
+# - # - # - # - # - # -
+import sqlite3
+import pandas as pd
+
+conect = sqlite3.connect("positions.sqlite")
+db = pd.read_sql_query("SELECT * FROM positions", conect)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 """
 data2 = [
     ("Luis", "Physicist", "cucei@example"),

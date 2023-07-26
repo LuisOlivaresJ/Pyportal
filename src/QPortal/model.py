@@ -16,10 +16,11 @@ class positionsModel:
     def _createModel():
         """Create and set up the model."""
         tableModel = QSqlTableModel()
+        #tableModel.setFilter("")
         tableModel.setTable("positions")
         #tableModel.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
         tableModel.select()
-        headers = ("Date", "SID", "x", "y")
+        headers = ("Date", "SID", "G. angle", "x", "y")
         for columnIndex, header in enumerate(headers):
             tableModel.setHeaderData(columnIndex, Qt.Orientation.Horizontal, header)
         return tableModel

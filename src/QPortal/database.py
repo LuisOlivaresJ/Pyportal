@@ -41,6 +41,7 @@ def _createPositionsTable():
         CREATE TABLE IF NOT EXISTS positions (
             date VARCHAR(40) NOT NULL,
             sid REAL NOT NULL,
+            gantry_angle REAL NOT NULL,
             x  REAL NOT NULL,
             y  REAL NOT NULL
         )
@@ -53,10 +54,10 @@ def _isEmpty():
     used to get the reference portal position, saving it as the first row. Otherwise, returns 
     """
     isEmptyQuery = QSqlQuery()
-    isEmptyQuery.exec("SELECT date, sid, x, y FROM positions")
+    isEmptyQuery.exec("SELECT date, sid, gantry_angle, x, y FROM positions")
     if not isEmptyQuery.first():
         reference_file_name, _ = QFileDialog.getOpenFileName(caption = "Select a reference image.", dir="/home")
-        date, sid, x, y = getXY(reference_file_name)
+        date, sid, gantry_angle, x, y = getXY(reference_file_name)
         print(
             f"Date created: {date}, SID: {sid}, x: {x}, y: {y}")
         isEmptyQuery.finish()
@@ -68,10 +69,11 @@ def _isEmpty():
         INSERT INTO positions (
             date,
             sid,
+            gantry_angle,
             x,
             y
         )
-        VALUES (?,?,?,?)
+        VALUES (?,?,?,?,?)
         """
         )
 
@@ -79,6 +81,7 @@ def _isEmpty():
 
         insertQuery.addBindValue(date)
         insertQuery.addBindValue(sid)
+        insertQuery.addBindValue(gantry_angle)
         insertQuery.addBindValue(x)
         insertQuery.addBindValue(y)
         insertQuery.exec()

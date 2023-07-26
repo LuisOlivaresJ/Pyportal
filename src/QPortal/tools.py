@@ -29,6 +29,8 @@ def getXY(file):
     dateCreated = img.image.date_created(format="%Y-%m-%d")
     # Distance from radiation machine source to image plane (in mm) along radiation beam axis.
     sid = float(img.image.metadata['RTImageSID'].value)
+    gantry_angle = float(img.image.metadata['GantryAngle'].value)
+
     distance_from_beam_center_to_panel_center_X = round(
         results.geometric_center_index_x_y[0]/img.image.dpmm - results.beam_center_index_x_y[0]/img.image.dpmm, 2)
     distance_from_beam_center_to_panel_center_Y = round(
@@ -36,6 +38,7 @@ def getXY(file):
     
     return (dateCreated,
             sid,
+            gantry_angle,
             distance_from_beam_center_to_panel_center_X,
             distance_from_beam_center_to_panel_center_Y
             )
