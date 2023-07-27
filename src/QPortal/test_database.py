@@ -62,6 +62,7 @@ import pandas as pd
 
 conect = sqlite3.connect("positions.sqlite")
 db = pd.read_sql_query("SELECT * FROM positions", conect)
+con.close()
 
 
 

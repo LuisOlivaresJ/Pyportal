@@ -100,7 +100,7 @@ def _isEmpty():
 
 def get_reference_data():
     """
-    Get the reference positions from the database
+    Get the reference positions from the database.
 
     """
     refCon = QSqlDatabase.addDatabase("QSQLITE", "refCon")
