@@ -45,7 +45,9 @@ def _createPositionsTable():
             sid REAL NOT NULL,
             gantry_angle REAL NOT NULL,
             x  REAL NOT NULL,
-            y  REAL NOT NULL
+            y  REAL NOT NULL,
+            dx REAL NOT NULL,
+            dy REAL NOT NULL
         )
         """
     )
@@ -56,12 +58,12 @@ def _isEmpty():
     used to get the reference portal position, saving it as the first row. Otherwise, returns 
     """
     isEmptyQuery = QSqlQuery()
-    isEmptyQuery.exec("SELECT date, sid, gantry_angle, x, y FROM positions")
+    isEmptyQuery.exec("SELECT date, sid, gantry_angle, x, y, dx, dy FROM positions")
     if not isEmptyQuery.first():
         reference_file_name, _ = QFileDialog.getOpenFileName(caption = "Select a reference image.", dir="/home")
-        date, sid, gantry_angle, x, y = getXY(reference_file_name)
-        print(
-            f"Date created: {date}, SID: {sid}, x: {x}, y: {y}")
+        #date, sid, gantry_angle, x, y = getXY(reference_file_name)
+        xy = getXY(reference_file_name)
+        print(xy)
         isEmptyQuery.finish()
 
         #Create a query for later execution using .prepare()
@@ -73,19 +75,23 @@ def _isEmpty():
             sid,
             gantry_angle,
             x,
-            y
+            y,
+            dx,
+            dy
         )
-        VALUES (?,?,?,?,?)
+        VALUES (?,?,?,?,?,?,?)
         """
         )
 
         # Use .addBindingValue() to insert data
 
-        insertQuery.addBindValue(date)
-        insertQuery.addBindValue(sid)
-        insertQuery.addBindValue(gantry_angle)
-        insertQuery.addBindValue(x)
-        insertQuery.addBindValue(y)
+        insertQuery.addBindValue(xy["Date"])
+        insertQuery.addBindValue(xy["SID"])
+        insertQuery.addBindValue(xy["G"])
+        insertQuery.addBindValue(xy["x"])
+        insertQuery.addBindValue(xy["y"])
+        insertQuery.addBindValue(0)
+        insertQuery.addBindValue(0)
         insertQuery.exec()
         insertQuery.finish()
 
@@ -105,7 +111,7 @@ def get_reference_data():
         sys.exit(1)
     
     getRefQuery = QSqlQuery(db)
-    getRefQuery.exec("SELECT date, sid, gantry_angle, x, y FROM positions")
+    getRefQuery.exec("SELECT date, sid, gantry_angle, x, y, dx, dy FROM positions")
     #while getRefQuery.next():
     getRefQuery.first()
 
@@ -113,7 +119,9 @@ def get_reference_data():
                      "SID": getRefQuery.value("sid"), 
                      "G": getRefQuery.value("gantry_angle"), 
                      "x": getRefQuery.value("x"), 
-                     "y": getRefQuery.value("y")
+                     "y": getRefQuery.value("y"),
+                     "dx": getRefQuery.value("dx"),
+                     "dy": getRefQuery.value("dy"),
                      }
     
     getRefQuery.finish()

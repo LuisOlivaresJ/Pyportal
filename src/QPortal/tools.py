@@ -16,8 +16,8 @@ def getXY(path):
     Returns
     -------
 
-    tuple
-        (Date created (str), SID (float), Gantry angle (float), distance in x (float), distance in y (float))
+    dictionary
+        {Date, SID, G, x, y}
 
     """
     img = FieldAnalysis(path = path)
@@ -35,10 +35,10 @@ def getXY(path):
     distance_from_beam_center_to_panel_center_Y = round(
         results.geometric_center_index_x_y[1]/img.image.dpmm - results.beam_center_index_x_y[1]/img.image.dpmm, 2)
     
-    return (dateCreated,
-            sid,
-            gantry_angle,
-            distance_from_beam_center_to_panel_center_X,
-            distance_from_beam_center_to_panel_center_Y
-            )
+    return {"Date": dateCreated,
+            "SID": sid,
+            "G": gantry_angle,
+            "x": distance_from_beam_center_to_panel_center_X,
+            "y": distance_from_beam_center_to_panel_center_Y
+    }
 

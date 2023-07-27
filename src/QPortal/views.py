@@ -69,23 +69,26 @@ class Window(QMainWindow):
 
 
     def openAddDialog(self):
-
-        "Load reference data"
+        "Load reference data."
         ref = get_reference_data()
 
-        """Open an image dialog."""
+        """Open an image dialog to ask for a directory."""
         dir = QFileDialog.getExistingDirectory(caption = "Open the folder with the images...", dir="/home")
         files = list(Path(dir).glob("RI*.dcm"))
+     
         for file in files:
-            "First loop for reference-day image identification."
-            my_img = FieldAnalysis(path = f"{file}")
-            if my_img.image.metadata['RTImageSID'].value == ref['SID']:
-                results = getXY(path = f"{file}")
-                print(results)
-                self.positionsModel.addPosition(results)
-                self.table.resizeColumnsToContents()
-            else:
-                return
+
+            xy = getXY(path = f"{file}")
+
+            dif_x = round(xy["x"] - ref["x"], 2)
+            dif_y = round(xy["y"] - ref["y"], 2)
+
+            dif = {"dx": dif_x, "dy": dif_y}
+
+            xy_results = {**xy, **dif}
+            self.positionsModel.addPosition(xy_results)
+
+        self.table.resizeColumnsToContents()
 
 
     def deleteRow(self):

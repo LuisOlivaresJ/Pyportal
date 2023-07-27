@@ -20,7 +20,7 @@ class positionsModel:
         tableModel.setTable("positions")
         #tableModel.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
         tableModel.select()
-        headers = ("Date", "SID", "G. angle", "x", "y")
+        headers = ("Date", "SID", "G. angle", "x", "y", "dx", "dy")
         for columnIndex, header in enumerate(headers):
             tableModel.setHeaderData(columnIndex, Qt.Orientation.Horizontal, header)
         return tableModel
@@ -31,7 +31,7 @@ class positionsModel:
         rows = self.model.rowCount()
         self.model.insertRows(rows, 1)
         for column, field in enumerate(position):
-            self.model.setData(self.model.index(rows, column), field)
+            self.model.setData(self.model.index(rows, column), position[field])
         self.model.submitAll()
         self.model.select()
 
