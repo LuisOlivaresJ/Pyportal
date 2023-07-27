@@ -6,6 +6,9 @@ are responsible for displaying the data
 to the user.
 """
 
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
+
 from PySide6.QtWidgets import(
     QFileDialog,
     QHBoxLayout,
@@ -25,17 +28,19 @@ class Window(QMainWindow):
         """Initializer."""
         super().__init__(parent)
         self.setWindowTitle("QPortal Positioning")
-        self.resize(550, 250)
+        self.resize(950, 350)
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
-        self.layout = QHBoxLayout()
-        self.centralWidget.setLayout(self.layout)
+        self.hlayout = QHBoxLayout()
+        self.centralWidget.setLayout(self.hlayout)
         
         self.positionsModel = positionsModel()
         self.setupUI()
 
     def setupUI(self):
         """Setup the main window's GUI."""
+        
+        # Create widgets
         # Create the table view widget
         self.table = QTableView()
         self.table.setModel(self.positionsModel.model)
@@ -50,6 +55,12 @@ class Window(QMainWindow):
         self.exportButton.clicked.connect(self.exportResults)
         self.clearAllButton = QPushButton("Clear All")
         self.clearAllButton.clicked.connect(self.clearAll)
+        # Create canvas plot view
+        self.view_canvas = FigureCanvas(Figure(figsize=(5,3)))
+        self.axes = self.view_canvas.figure.subplots()
+        self.toolbar = NavigationToolbar2QT(self.view_canvas, self)
+
+        
         #Lay out the GUI
 
         layout = QVBoxLayout()
@@ -59,8 +70,14 @@ class Window(QMainWindow):
         layout.addStretch()
         layout.addWidget(self.clearAllButton)
 
-        self.layout.addLayout(layout)
-        self.layout.addWidget(self.table)
+        plot_layout = QVBoxLayout()
+        plot_layout.addWidget(self.toolbar)
+        plot_layout.addWidget(self.view_canvas)
+
+        self.hlayout.addLayout(layout)
+        self.hlayout.addWidget(self.table)
+        self.hlayout.addLayout(plot_layout)
+
 
 
     def openAddDialog(self):
@@ -81,6 +98,7 @@ class Window(QMainWindow):
 
         self.positionsModel.addPosition(positions)
         self.table.resizeColumnsToContents()
+        self.update_plot()
 
     def deleteRow(self):
         """Delete the selected row from the database."""
@@ -112,3 +130,8 @@ class Window(QMainWindow):
     def exportResults(self):
         """Export database."""
         return
+    
+    def update_plot(self):
+        """Update the plot loading the database."""
+        
+        
