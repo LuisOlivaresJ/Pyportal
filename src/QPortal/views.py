@@ -16,8 +16,13 @@ from PySide6.QtWidgets import(
     QVBoxLayout,
     QWidget,
 )
-from pylinac import FieldAnalysis, Centering
+from pylinac import FieldAnalysis
+
+from pathlib import Path
+
 from model import positionsModel
+from tools import getXY
+from database import get_reference_data
 
 class Window(QMainWindow):
     """Main Window."""
@@ -64,23 +69,27 @@ class Window(QMainWindow):
 
 
     def openAddDialog(self):
-        """Open an image dialog."""
-        file_name, _ = QFileDialog.getOpenFileName()
-        #_ , extension = os.path.splitext(self.last_file_name)
-        my_img = FieldAnalysis(path = file_name)
-        my_img.analyze(centering = Centering.GEOMETRIC_CENTER)
-        results = my_img.results_data()
+        "Load reference data."
+        ref = get_reference_data()
 
-        distance_from_beam_center_to_panel_center_X = results.geometric_center_index_x_y[0]/my_img.image.dpmm - results.beam_center_index_x_y[0]/my_img.image.dpmm
-        distance_from_beam_center_to_panel_center_Y = results.geometric_center_index_x_y[1]/my_img.image.dpmm - results.beam_center_index_x_y[1]/my_img.image.dpmm
-        date_ = my_img.image.date_created(format = "%Y-%m-%d")
-        positions = [date_, 
-                     f"{distance_from_beam_center_to_panel_center_X:0.2f}", 
-                     f"{distance_from_beam_center_to_panel_center_Y:0.2f}"
-                     ]
+        """Open an image dialog to ask for a directory."""
+        dir = QFileDialog.getExistingDirectory(caption = "Open the folder with the images...", dir="/home")
+        files = list(Path(dir).glob("RI*.dcm"))
+     
+        for file in files:
 
-        self.positionsModel.addPosition(positions)
+            xy = getXY(path = f"{file}")
+
+            dif_x = round(xy["x"] - ref["x"], 2)
+            dif_y = round(xy["y"] - ref["y"], 2)
+
+            dif = {"dx": dif_x, "dy": dif_y}
+
+            xy_results = {**xy, **dif}
+            self.positionsModel.addPosition(xy_results)
+
         self.table.resizeColumnsToContents()
+
 
     def deleteRow(self):
         """Delete the selected row from the database."""
