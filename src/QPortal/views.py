@@ -8,6 +8,7 @@ to the user.
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
+import matplotlib.dates as mdates
 
 from PySide6.QtWidgets import(
     QFileDialog,
@@ -25,7 +26,7 @@ from pathlib import Path
 
 from model import positionsModel
 from tools import getXY
-from database import get_reference_data
+from database import get_reference_data, get_as_pd_dataframe
 
 class Window(QMainWindow):
     """Main Window."""
@@ -40,6 +41,7 @@ class Window(QMainWindow):
         self.centralWidget.setLayout(self.hlayout)
         
         self.positionsModel = positionsModel()
+        
         self.setupUI()
 
     def setupUI(self):
@@ -61,9 +63,10 @@ class Window(QMainWindow):
         self.clearAllButton = QPushButton("Clear All")
         self.clearAllButton.clicked.connect(self.clearAll)
         # Create canvas plot view
-        self.view_canvas = FigureCanvas(Figure(figsize=(5,3)))
+        self.view_canvas = FigureCanvas(Figure(figsize=(5,3), layout = 'constrained'))
         self.axes = self.view_canvas.figure.subplots()
         self.toolbar = NavigationToolbar2QT(self.view_canvas, self)
+        self.update_plot()
 
         
         #Lay out the GUI
@@ -86,11 +89,14 @@ class Window(QMainWindow):
 
 
     def openAddDialog(self):
-        "Load reference data."
+        """This method is used to add data from new aquired images."""
+
+        # Load reference data.
         ref = get_reference_data()
 
-        """Open an image dialog to ask for a directory."""
+        # Open an image dialog to ask for a directory.
         dir = QFileDialog.getExistingDirectory(caption = "Open the folder with the images...", dir="/home")
+        # Filter 
         files = list(Path(dir).glob("RI*.dcm"))
      
         for file in files:
@@ -142,5 +148,19 @@ class Window(QMainWindow):
     
     def update_plot(self):
         """Update the plot loading the database."""
-        
+
+        df = get_as_pd_dataframe()
+        self.axes.clear()
+        #df.plot(x = "Date", y = ["dx", "dy"], kind = "bar", ax = self.axes)
+        df.plot(x = "Date", y = ["dx", "dy"], ax = self.axes, style="o")
+        #self.axes.bar(x = df["Date"], height = df["dx"])
+        self.axes.xaxis.set_major_formatter(mdates.ConciseDateFormatter(self.axes.xaxis.get_major_locator()))
+        self.axes.axhline(2, color = "g")
+        self.axes.axhline(-2, color = "g")
+        self.axes.grid(which="both")
+        self.axes.set_ylim(bottom = -5, top = 5)
+        self.axes.legend(loc = 'upper left')
+        self.axes.set_ylabel("Distance [mm]")
+
+        self.view_canvas.draw()
         

@@ -20,7 +20,7 @@ class positionsModel:
         tableModel.setTable("positions")
         #tableModel.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
         tableModel.select()
-        headers = ("Date", "SID", "G. angle", "x", "y", "dx", "dy")
+        headers = ("Date", "SID", "G°", "x", "y", "dx", "dy")
         for columnIndex, header in enumerate(headers):
             tableModel.setHeaderData(columnIndex, Qt.Orientation.Horizontal, header)
         return tableModel
