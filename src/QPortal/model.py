@@ -7,6 +7,7 @@ with and access the data in the database."""
 
 from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex
 from PySide6.QtSql import QSqlTableModel
+from PySide6 import QtGui
 import pandas
 
 class positionsModel:
@@ -51,6 +52,8 @@ class positionsModel:
         self.model.select()
 
 class PandasModel(QAbstractTableModel):
+    # Copyright (C) 2022 The Qt Company Ltd.
+    # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
     """A model to interface a Qt view with pandas dataframe """
 
     def __init__(self, dataframe: pandas.DataFrame, parent=None):
@@ -86,6 +89,43 @@ class PandasModel(QAbstractTableModel):
 
         if role == Qt.DisplayRole:
             return str(self._dataframe.iloc[index.row(), index.column()])
+
+        """
+        if role == Qt.ForegroundRole:   # To change color font
+            value = self._dataframe.iloc[index.row()][index.column()]
+            #value = self._dataframe.iloc[index.row(), ["dx","dy"]]
+
+            if index.column() == 5 or index.column() == 6:
+                "Columns 5 and 6 refers to dx and dy in the pandas dataframe."
+                if (
+                    (isinstance(value, int) or isinstance(value, float))
+                    and value >= 2
+                ):
+                    return QtGui.QColor('red')
+                        
+        if role == Qt.BackgroundRole:
+            value = self._dataframe.iloc[index.row()][index.column()]
+
+            if index.column() == 5 or index.column() == 6:  # change background only for ccolumns(5,6)
+                if (
+                    (isinstance(value, int) or isinstance(value, float))
+                    and value >= 2
+                ):
+                    return QtGui.QColor('red')
+                else:
+                    return QtGui.QColor('green')
+        """        
+        if role == Qt.DecorationRole:
+            value = self._dataframe.iloc[index.row()][index.column()]
+
+            if index.column() == 5 or index.column() == 6:  # change background only for ccolumns(5,6)
+                if (
+                    (isinstance(value, int) or isinstance(value, float))
+                    and value >= 2
+                ):
+                    return QtGui.QIcon('.\icons\cross.png')
+                else:
+                    return QtGui.QIcon('.\icons\\accept.png')
 
         return None
 

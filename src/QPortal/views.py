@@ -53,8 +53,9 @@ class Window(QMainWindow):
         # Create the table view widget
         self.table = QTableView()
         self.table.setModel(self.positionsModel.model)
-        #self.table.set
         self.table.resizeColumnsToContents()
+        self.table.setAlternatingRowColors(True)
+        self.table.setSelectionBehavior(QTableView.SelectRows)
         # Create buttons
         self.addButton = QPushButton("Open...")
         self.addButton.clicked.connect(self.openAddDialog)
@@ -186,6 +187,7 @@ class ShowDialog(QDialog):
         """Initializer."""
         super().__init__(parent=parent)
         self.setWindowTitle("Results")
+        self.resize(750, 350)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.dataFrame = dataFrame
@@ -196,6 +198,7 @@ class ShowDialog(QDialog):
         """Setup the Show dialog's GUI."""
 
         view = QTableView()
+        view.resizeColumnsToContents()
         view.resize(800, 500)
         view.horizontalHeader().setStretchLastSection(True)
         view.setAlternatingRowColors(True)

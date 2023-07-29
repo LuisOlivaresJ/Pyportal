@@ -43,9 +43,9 @@ def _createPositionsTable():
     return createTableQuery.exec(
         """
         CREATE TABLE IF NOT EXISTS positions (
-            date VARCHAR(40) NOT NULL,
-            sid REAL NOT NULL,
-            gantry_angle REAL NOT NULL,
+            Date VARCHAR(25) NOT NULL,
+            SID REAL NOT NULL,
+            Gantry REAL NOT NULL,
             x  REAL NOT NULL,
             y  REAL NOT NULL,
             dx REAL NOT NULL,
@@ -60,7 +60,7 @@ def _isEmpty():
     used to get the reference portal position, saving it as the first row. Otherwise, returns 
     """
     isEmptyQuery = QSqlQuery()
-    isEmptyQuery.exec("SELECT date, sid, gantry_angle, x, y, dx, dy FROM positions")
+    isEmptyQuery.exec("SELECT Date, SID, Gantry, x, y, dx, dy FROM positions")
     if not isEmptyQuery.first():
         reference_file_name, _ = QFileDialog.getOpenFileName(caption = "Select a reference image.", dir="/home")
         #date, sid, gantry_angle, x, y = getXY(reference_file_name)
@@ -73,9 +73,9 @@ def _isEmpty():
         insertQuery.prepare(
         """
         INSERT INTO positions (
-            date,
-            sid,
-            gantry_angle,
+            Date,
+            SID,
+            Gantry,
             x,
             y,
             dx,
@@ -89,7 +89,7 @@ def _isEmpty():
 
         insertQuery.addBindValue(xy["Date"])
         insertQuery.addBindValue(xy["SID"])
-        insertQuery.addBindValue(xy["G"])
+        insertQuery.addBindValue(xy["Gantry"])
         insertQuery.addBindValue(xy["x"])
         insertQuery.addBindValue(xy["y"])
         insertQuery.addBindValue(0)
@@ -113,13 +113,13 @@ def get_reference_data():
         sys.exit(1)
     
     getRefQuery = QSqlQuery(db)
-    getRefQuery.exec("SELECT date, sid, gantry_angle, x, y, dx, dy FROM positions")
+    getRefQuery.exec("SELECT Date, SID, Gantry, x, y, dx, dy FROM positions")
     #while getRefQuery.next():
     getRefQuery.first()
 
-    referenceData = {"Date": getRefQuery.value("date"), 
-                     "SID": getRefQuery.value("sid"), 
-                     "G": getRefQuery.value("gantry_angle"), 
+    referenceData = {"Date": getRefQuery.value("Date"), 
+                     "SID": getRefQuery.value("SID"), 
+                     "G": getRefQuery.value("Gantry"), 
                      "x": getRefQuery.value("x"), 
                      "y": getRefQuery.value("y"),
                      "dx": getRefQuery.value("dx"),
@@ -138,9 +138,9 @@ def get_as_pd_dataframe():
     get_db_con.close()
 
 
-    df["Date"] = pandas.to_datetime(df["date"], format = "ISO8601")
-    del df["date"]
-    print(df)
+    df["Date"] = pandas.to_datetime(df["Date"], format = "ISO8601")
+    #del df["Date"]
+    #print(df)
     return df
 
 def insertData(data):

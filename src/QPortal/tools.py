@@ -17,7 +17,7 @@ def getXY(path):
     -------
 
     dictionary
-        {Date, SID, G, x, y}
+        {Date, SID, Gantry, x, y}
 
     """
     img = FieldAnalysis(path = path)
@@ -37,7 +37,7 @@ def getXY(path):
     
     return {"Date": dateCreated,
             "SID": sid,
-            "G": gantry_angle,
+            "Gantry": gantry_angle,
             "x": distance_from_beam_center_to_panel_center_X,
             "y": distance_from_beam_center_to_panel_center_Y
     }
