@@ -11,6 +11,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
 import matplotlib.dates as mdates
 
 from PySide6.QtWidgets import(
+    QDialogButtonBox,
     QFileDialog,
     QHBoxLayout,
     QMainWindow,
@@ -19,12 +20,13 @@ from PySide6.QtWidgets import(
     QTableView,
     QVBoxLayout,
     QWidget,
+    QDialog,
 )
-from pylinac import FieldAnalysis
+from PySide6.QtCore import Qt
 
 from pathlib import Path
 
-from model import positionsModel
+from model import positionsModel, PandasModel
 from tools import getXY
 from database import get_reference_data, get_as_pd_dataframe
 
@@ -114,6 +116,9 @@ class Window(QMainWindow):
 
         self.table.resizeColumnsToContents()
         self.update_plot()
+        print("Número de archivos:")
+        print(type(len(files)))
+
         self.show_results(len(files))
 
 
@@ -166,7 +171,62 @@ class Window(QMainWindow):
 
         self.view_canvas.draw()
 
-    def show_results(n):
+    def show_results(self, n):
         """A method to show the last n results from n loaded files."""
         df = get_as_pd_dataframe()
+        show_dialog = ShowDialog(df.tail(n))
+        dialog = ShowDialog(df.tail(n))
+        if dialog.exec() == 1:
+            self.contactsModel.addContact(dialog.data)
+            self.table.resizeColumnsToContents()
+            
+class ShowDialog(QDialog):
+    """Show results dialog."""
+    def __init__(self, dataFrame, parent=None):
+        """Initializer."""
+        super().__init__(parent=parent)
+        self.setWindowTitle("Results")
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.dataFrame = dataFrame
+
+        self.setupUI()
+
+    def setupUI(self):
+        """Setup the Show dialog's GUI."""
+
+        view = QTableView()
+        view.resize(800, 500)
+        view.horizontalHeader().setStretchLastSection(True)
+        view.setAlternatingRowColors(True)
+        view.setSelectionBehavior(QTableView.SelectRows)
+
+        model = PandasModel(self.dataFrame)
+        view.setModel(model)
+
+        self.layout.addWidget(view)
+        # Add standar buttons to the dialog and connect them
+        self.buttonsBox = QDialogButtonBox(self)
+        self.buttonsBox.setOrientation(Qt.Orientation.Horizontal)
+        self.buttonsBox.setStandardButtons(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        self.buttonsBox.accepted.connect(self.acept)
+        self.buttonsBox.rejected.connect(self.reject)
+        self.layout.addWidget(self.buttonsBox)
+
+    def acept(self):
+        """Accept the data provided through the dialog."""
+        self.data = []
+        for field in (self.nameField, self.jobField, self.emailField):
+            if not field.text():
+                QMessageBox.critical(
+                    self,
+                    "Error!",
+                    f"You must provide a contact's {field.objectName()}"
+                )
+                self.data = None #Reset .data
+                return
+            self.data.append(field.text())
         
+        super().accept()
