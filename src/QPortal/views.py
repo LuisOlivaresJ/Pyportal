@@ -107,12 +107,14 @@ class Window(QMainWindow):
             dif_y = round(xy["y"] - ref["y"], 2)
 
             dif = {"dx": dif_x, "dy": dif_y}
-
+            
             xy_results = {**xy, **dif}
+            
             self.positionsModel.addPosition(xy_results)
 
         self.table.resizeColumnsToContents()
         self.update_plot()
+        self.show_results(len(files))
 
 
     def deleteRow(self):
@@ -160,7 +162,11 @@ class Window(QMainWindow):
         self.axes.grid(which="both")
         self.axes.set_ylim(bottom = -5, top = 5)
         self.axes.legend(loc = 'upper left')
-        self.axes.set_ylabel("Distance [mm]")
+        self.axes.set_ylabel("Variation [mm]")
 
         self.view_canvas.draw()
+
+    def show_results(n):
+        """A method to show the last n results from n loaded files."""
+        df = get_as_pd_dataframe()
         
