@@ -5,6 +5,8 @@ from PySide6.QtSql import QSqlDatabase
 from PySide6.QtSql import QSqlQuery
 
 import sys
+import sqlite3
+import pandas
 
 from tools import getXY
 
@@ -100,7 +102,7 @@ def _isEmpty():
 
 def get_reference_data():
     """
-    Get the reference positions from the database
+    Get the reference positions from the database.
 
     """
     refCon = QSqlDatabase.addDatabase("QSQLITE", "refCon")
@@ -128,6 +130,18 @@ def get_reference_data():
     refCon.close()
 
     return referenceData
+
+def get_as_pd_dataframe():
+    """Get database as pandas DataFrame instance."""
+    get_db_con = sqlite3.connect("positions.sqlite")
+    df = pandas.read_sql_query("SELECT * FROM positions", get_db_con)
+    get_db_con.close()
+
+
+    df["Date"] = pandas.to_datetime(df["date"], format = "ISO8601")
+    del df["date"]
+    print(df)
+    return df
 
 def insertData(data):
     insertCon = QSqlDatabase.addDatabase("QSQLITE", "insertCon")

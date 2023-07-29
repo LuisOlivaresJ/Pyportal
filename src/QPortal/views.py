@@ -6,6 +6,10 @@ are responsible for displaying the data
 to the user.
 """
 
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
+import matplotlib.dates as mdates
+
 from PySide6.QtWidgets import(
     QFileDialog,
     QHBoxLayout,
@@ -22,7 +26,7 @@ from pathlib import Path
 
 from model import positionsModel
 from tools import getXY
-from database import get_reference_data
+from database import get_reference_data, get_as_pd_dataframe
 
 class Window(QMainWindow):
     """Main Window."""
@@ -30,17 +34,20 @@ class Window(QMainWindow):
         """Initializer."""
         super().__init__(parent)
         self.setWindowTitle("QPortal Positioning")
-        self.resize(550, 250)
+        self.resize(950, 350)
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
-        self.layout = QHBoxLayout()
-        self.centralWidget.setLayout(self.layout)
+        self.hlayout = QHBoxLayout()
+        self.centralWidget.setLayout(self.hlayout)
         
         self.positionsModel = positionsModel()
+        
         self.setupUI()
 
     def setupUI(self):
         """Setup the main window's GUI."""
+        
+        # Create widgets
         # Create the table view widget
         self.table = QTableView()
         self.table.setModel(self.positionsModel.model)
@@ -55,6 +62,13 @@ class Window(QMainWindow):
         self.exportButton.clicked.connect(self.exportResults)
         self.clearAllButton = QPushButton("Clear All")
         self.clearAllButton.clicked.connect(self.clearAll)
+        # Create canvas plot view
+        self.view_canvas = FigureCanvas(Figure(figsize=(5,3), layout = 'constrained'))
+        self.axes = self.view_canvas.figure.subplots()
+        self.toolbar = NavigationToolbar2QT(self.view_canvas, self)
+        self.update_plot()
+
+        
         #Lay out the GUI
 
         layout = QVBoxLayout()
@@ -64,16 +78,25 @@ class Window(QMainWindow):
         layout.addStretch()
         layout.addWidget(self.clearAllButton)
 
-        self.layout.addLayout(layout)
-        self.layout.addWidget(self.table)
+        plot_layout = QVBoxLayout()
+        plot_layout.addWidget(self.toolbar)
+        plot_layout.addWidget(self.view_canvas)
+
+        self.hlayout.addLayout(layout)
+        self.hlayout.addWidget(self.table)
+        self.hlayout.addLayout(plot_layout)
+
 
 
     def openAddDialog(self):
-        "Load reference data."
+        """This method is used to add data from new aquired images."""
+
+        # Load reference data.
         ref = get_reference_data()
 
-        """Open an image dialog to ask for a directory."""
+        # Open an image dialog to ask for a directory.
         dir = QFileDialog.getExistingDirectory(caption = "Open the folder with the images...", dir="/home")
+        # Filter 
         files = list(Path(dir).glob("RI*.dcm"))
      
         for file in files:
@@ -84,11 +107,14 @@ class Window(QMainWindow):
             dif_y = round(xy["y"] - ref["y"], 2)
 
             dif = {"dx": dif_x, "dy": dif_y}
-
+            
             xy_results = {**xy, **dif}
+            
             self.positionsModel.addPosition(xy_results)
 
         self.table.resizeColumnsToContents()
+        self.update_plot()
+        self.show_results(len(files))
 
 
     def deleteRow(self):
@@ -121,3 +147,26 @@ class Window(QMainWindow):
     def exportResults(self):
         """Export database."""
         return
+    
+    def update_plot(self):
+        """Update the plot loading the database."""
+
+        df = get_as_pd_dataframe()
+        self.axes.clear()
+        #df.plot(x = "Date", y = ["dx", "dy"], kind = "bar", ax = self.axes)
+        df.plot(x = "Date", y = ["dx", "dy"], ax = self.axes, style="o")
+        #self.axes.bar(x = df["Date"], height = df["dx"])
+        self.axes.xaxis.set_major_formatter(mdates.ConciseDateFormatter(self.axes.xaxis.get_major_locator()))
+        self.axes.axhline(2, color = "g")
+        self.axes.axhline(-2, color = "g")
+        self.axes.grid(which="both")
+        self.axes.set_ylim(bottom = -5, top = 5)
+        self.axes.legend(loc = 'upper left')
+        self.axes.set_ylabel("Variation [mm]")
+
+        self.view_canvas.draw()
+
+    def show_results(n):
+        """A method to show the last n results from n loaded files."""
+        df = get_as_pd_dataframe()
+        
