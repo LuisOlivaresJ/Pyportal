@@ -118,7 +118,7 @@ class PandasModel(QAbstractTableModel):
         if role == Qt.DecorationRole:
             value = self._dataframe.iloc[index.row()][index.column()]
 
-            if index.column() == 5 or index.column() == 6:  # change background only for ccolumns(5,6)
+            if index.column() == 5 or index.column() == 6:  # change background only for columns(5,6)
                 if (
                     (isinstance(value, int) or isinstance(value, float))
                     and value >= 2
@@ -126,6 +126,12 @@ class PandasModel(QAbstractTableModel):
                     return QtGui.QIcon('.\icons\cross.png')
                 else:
                     return QtGui.QIcon('.\icons\\accept.png')
+                
+        if role == Qt.FontRole:
+            if index.column() == 5 or index.column() == 6:  # change font
+                bold_font = QtGui.QFont()
+                bold_font.setBold(True)
+                return bold_font
 
         return None
 
