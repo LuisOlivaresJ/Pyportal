@@ -10,11 +10,6 @@ Pyportal provides [TG-307](https://doi.org/10.1002/mp.16536) quality assurance (
 
 Determine the reproducibility of EPID positioning at gantry zero by three EPID deployments with a 10 cm × 10 cm field acquired after each deployment. Establish the center of each field in X and Y directions and measure the distance to the center of the panel for all three acquisitions to determine reproducibility.
 
-epid_positioning_algorithm.py shows the pylinac implementation to be used for distance calculation.
-SQLite is going to be used for data storage. [This is](https://github.com/LuisOlivaresJ/GUI_RealPython/tree/main/rpcontacts_project) a GUI example using PyQt6.
-
-To do: lectura de 3 archivos, cálculo de XY, comparación con X y Y de referencia. Graficar mostrar resultado.
-
 ## EPID positioning with gantry rotation
 
   Tolerance: Vendor specification or ≤2 mm
