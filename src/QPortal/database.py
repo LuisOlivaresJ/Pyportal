@@ -53,6 +53,49 @@ def _createPositionsTable():
         )
         """
     )
+    createTableQuery.finish()
+
+def _createUserToleranceTable():
+    """Used to create user settings like tolerances for test."""
+    createTableQuery = QSqlQuery()
+    return createTableQuery.exec(
+        """
+        CREATE TABLE IF NOT EXISTS settings (
+        tolerance_position REAL NOT NULL,
+        tolerance_linearity REAL NOT NULL,
+        tolerance_uniformity REAL NOT NULL,
+        tolerance_reproducibility REAL NOT NULL
+        )
+        """
+    )
+    createTableQuery.finish()
+    insertQuery = QSqlQuery()
+    insertQuery.prepare(
+    """
+    INSERT INTO positions (
+        Date,
+        SID,
+        Gantry,
+        x,
+        y,
+        dx,
+        dy
+    )
+    VALUES (?,?,?,?,?,?,?)
+    """
+    )
+
+    # Use .addBindingValue() to insert data
+
+    insertQuery.addBindValue(xy["Date"])
+    insertQuery.addBindValue(xy["SID"])
+    insertQuery.addBindValue(xy["Gantry"])
+    insertQuery.addBindValue(xy["x"])
+    insertQuery.addBindValue(xy["y"])
+    insertQuery.addBindValue(0)
+    insertQuery.addBindValue(0)
+    insertQuery.exec()
+    insertQuery.finish()
 
 def _isEmpty():
     """ 
