@@ -1,4 +1,4 @@
-Modificar las acciones de los botones de QDialog Results
+---Modificar las acciones de los botones de QDialog Results 
 
 Cómo agregar segunda tabla para almacenar configuraciones
 actualizar grafica según tolerancia

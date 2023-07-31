@@ -150,3 +150,20 @@ class PandasModel(QAbstractTableModel):
                 return str(self._dataframe.index[section])
 
         return None
+
+class ToleranceModel:
+    def __init__(self):
+        self.model = self._createModel()
+
+    @staticmethod
+    def _createModel():
+        """Create and set up the model."""
+        tableModel = QSqlTableModel()
+        #tableModel.setFilter("")
+        tableModel.setTable("tolerances")
+        tableModel.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
+        tableModel.select()
+        headers = ("Position [mm]", "Linearity [%]", "Uniformity [%]", "Reproducibility ")
+        for columnIndex, header in enumerate(headers):
+            tableModel.setHeaderData(columnIndex, Qt.Orientation.Horizontal, header)
+        return tableModel

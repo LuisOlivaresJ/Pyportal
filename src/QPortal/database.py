@@ -34,7 +34,9 @@ def createConnection(databaseName):
         return False
     print("SQL Connection Successfully Opened!")
     _createPositionsTable()
-    _isEmpty()
+    _createUserToleranceTable()
+    _positions_is_empty()
+    _tolerances_is_empty()
     return True
 
 def _createPositionsTable():
@@ -53,14 +55,13 @@ def _createPositionsTable():
         )
         """
     )
-    createTableQuery.finish()
 
 def _createUserToleranceTable():
     """Used to create user settings like tolerances for test."""
     createTableQuery = QSqlQuery()
-    return createTableQuery.exec(
+    createTableQuery.exec(
         """
-        CREATE TABLE IF NOT EXISTS settings (
+        CREATE TABLE IF NOT EXISTS tolerances (
         tolerance_position REAL NOT NULL,
         tolerance_linearity REAL NOT NULL,
         tolerance_uniformity REAL NOT NULL,
@@ -69,35 +70,8 @@ def _createUserToleranceTable():
         """
     )
     createTableQuery.finish()
-    insertQuery = QSqlQuery()
-    insertQuery.prepare(
-    """
-    INSERT INTO positions (
-        Date,
-        SID,
-        Gantry,
-        x,
-        y,
-        dx,
-        dy
-    )
-    VALUES (?,?,?,?,?,?,?)
-    """
-    )
 
-    # Use .addBindingValue() to insert data
-
-    insertQuery.addBindValue(xy["Date"])
-    insertQuery.addBindValue(xy["SID"])
-    insertQuery.addBindValue(xy["Gantry"])
-    insertQuery.addBindValue(xy["x"])
-    insertQuery.addBindValue(xy["y"])
-    insertQuery.addBindValue(0)
-    insertQuery.addBindValue(0)
-    insertQuery.exec()
-    insertQuery.finish()
-
-def _isEmpty():
+def _positions_is_empty():
     """ 
     If there are no fields in the record database, opens a QDialog window to ask for a file that is going to be 
     used to get the reference portal position, saving it as the first row. Otherwise, returns 
@@ -142,11 +116,52 @@ def _isEmpty():
 
     else:
         return
-
-def get_reference_data():
+def _tolerances_is_empty():
+    """ 
+    Set default tolerances when app is first used. 
     """
-    Get the reference positions from the database.
+    isEmptyQuery = QSqlQuery()
+    isEmptyQuery.exec("""
+        SELECT tolerance_position,
+        tolerance_linearity,
+        tolerance_uniformity,
+        tolerance_reproducibility FROM tolerances
+        """
+        )
+    if not isEmptyQuery.first():
 
+        insertQuery = QSqlQuery()
+        insertQuery.prepare(
+        """
+        INSERT INTO tolerances (
+            tolerance_position,
+            tolerance_linearity,
+            tolerance_uniformity,
+            tolerance_reproducibility
+        )
+        VALUES (?,?,?,?)
+        """
+        )
+
+        # Use .addBindingValue() to insert data
+
+        insertQuery.addBindValue(2)
+        insertQuery.addBindValue(2)
+        insertQuery.addBindValue(2)
+        insertQuery.addBindValue(2)
+        insertQuery.exec()
+        insertQuery.finish()
+
+    else:
+        return
+
+
+def load_reference_positions():
+    """
+    Get the reference positions from the firts row of the database.
+
+    Returns : dictionary
+        {Date: , SID: , G: , x: , y: , dx: , dy: }
     """
     refCon = QSqlDatabase.addDatabase("QSQLITE", "refCon")
     refCon.setDatabaseName("positions.sqlite")
@@ -174,6 +189,48 @@ def get_reference_data():
 
     return referenceData
 
+def load_tolerances():
+    """
+    Get the tolerances from the database.
+
+    Returns : dictionary
+        {t_position: ,
+        t_linearity: ,
+        t_uniformity: ,
+        t_reproducibility: 
+        }
+    """
+    toleranceCon = QSqlDatabase.addDatabase("QSQLITE", "toleranceCon")
+    toleranceCon.setDatabaseName("positions.sqlite")
+    db = QSqlDatabase.database("toleranceCon")
+    if not toleranceCon.open():
+        print(f"Tolerance database error: {toleranceCon.lastError().databaseText()}")
+        sys.exit(1)
+    
+    getTolQuery = QSqlQuery(db)
+    getTolQuery.exec(
+        """
+        SELECT tolerance_position,
+        tolerance_linearity, 
+        tolerance_uniformity, 
+        tolerance_reproducibility
+        FROM tolerances
+        """
+        )
+    #while getRefQuery.next():
+    getTolQuery.first()
+
+    tolerancesData = {"t_position": getTolQuery.value("tolerance_position"), 
+                     "t_linearity": getTolQuery.value("tolerance_linearity"), 
+                     "t_uniformity": getTolQuery.value("tolerance_uniformity"), 
+                     "t_reproducibility": getTolQuery.value("tolerance_reproducibility"), 
+                     }
+    
+    getTolQuery.finish()
+    toleranceCon.close()
+
+    return tolerancesData
+
 def get_as_pd_dataframe():
     """Get database as pandas DataFrame instance."""
     get_db_con = sqlite3.connect("positions.sqlite")
@@ -185,36 +242,3 @@ def get_as_pd_dataframe():
     #del df["Date"]
     #print(df)
     return df
-
-def insertData(data):
-    insertCon = QSqlDatabase.addDatabase("QSQLITE", "insertCon")
-    insertCon.setDatabaseName("positions.sqlite")
-    db = QSqlDatabase.database("insertCon")
-    if not insertCon.open():
-        print(f"Insert database error: {insertCon.lastError().databaseText()}")
-        sys.exit(1)
-
-    insertQuery = QSqlQuery(db)
-    insertQuery.prepare(
-        """
-        INSERT INTO positions (
-            name,
-            job,
-            email
-        )
-        VALUES (?,?,?)
-        """
-    )
-
-    # sample data
-    data = [
-        ("Joe","Senior","joe@example"),
-        ("Lara", "Project", "lara@example"),
-    ]
-
-    # Use .addBindingValue() to insert data
-    for name, job, email in data:
-        insertQuery.addBindValue(name)
-        insertQuery.addBindValue(job)
-        insertQuery.addBindValue(email)
-        insertQuery.exec()
