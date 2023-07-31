@@ -22,6 +22,7 @@ from PySide6.QtWidgets import(
     QWidget,
     QDialog,
     QAbstractItemView,
+    QTabWidget,
 )
 from PySide6.QtCore import Qt
 
@@ -37,12 +38,17 @@ class Window(QMainWindow):
     def __init__(self, parent = None):
         """Initializer."""
         super().__init__(parent)
-        self.setWindowTitle("QPortal Positioning")
+        self.setWindowTitle("QPortal")
         self.resize(950, 350)
-        self.centralWidget = QWidget()
+
+        self.centralWidget = QWidget()              
+        self.main_layout = QVBoxLayout()
+        tab_widget = QTabWidget()
+
+        self.positions_tab = QWidget()
+        self.main_layout.addWidget(self.positions_tab)
+        self.setLayout(self.main_layout)
         self.setCentralWidget(self.centralWidget)
-        self.hlayout = QHBoxLayout()
-        self.centralWidget.setLayout(self.hlayout)
         
         self.positionsModel = positionsModel()
         
@@ -55,6 +61,7 @@ class Window(QMainWindow):
         """Setup the main window's GUI."""
         
         # Create widgets
+
         # Create the table view widget
         self.table = QTableView()
         self.table.setModel(self.positionsModel.model)
@@ -80,6 +87,7 @@ class Window(QMainWindow):
         self.update_plot()
 
         #Lay out the GUI
+        self.hlayout = QHBoxLayout()
 
         layout = QVBoxLayout()
         layout.addWidget(self.addButton)
@@ -96,6 +104,8 @@ class Window(QMainWindow):
         self.hlayout.addLayout(layout)
         self.hlayout.addWidget(self.table)
         self.hlayout.addLayout(plot_layout)
+
+        self.positions_tab.setLayout(self.hlayout)
 
 # Methods for buttons
 

@@ -16,10 +16,11 @@ class Settings_Gui(QDialog):
     def setUpWindow(self):
         """"""
 
+        self.main_layout = QVBoxLayout()
+
         tab_widget = QTabWidget()
         tab_widget.addTab(ToleranceTab(self), "Set tolerance")
 
-        self.main_layout = QVBoxLayout()
         self.main_layout.addWidget(tab_widget)
 
         self.buttonsBox = QDialogButtonBox(self)
