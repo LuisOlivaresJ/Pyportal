@@ -27,7 +27,7 @@ class Settings_Gui(QDialog):
         self.buttonsBox.setStandardButtons(
             QDialogButtonBox.StandardButton.Ok
         )
-        self.buttonsBox.accepted.connect(self.reject)
+        self.buttonsBox.accepted.connect(self.accept)
         self.main_layout.addWidget(self.buttonsBox)
         self.setLayout(self.main_layout)
         

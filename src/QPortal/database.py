@@ -163,16 +163,9 @@ def load_reference_positions():
     Returns : dictionary
         {Date: , SID: , G: , x: , y: , dx: , dy: }
     """
-    refCon = QSqlDatabase.addDatabase("QSQLITE", "refCon")
-    refCon.setDatabaseName("positions.sqlite")
-    db = QSqlDatabase.database("refCon")
-    if not refCon.open():
-        print(f"Reference database error: {refCon.lastError().databaseText()}")
-        sys.exit(1)
     
-    getRefQuery = QSqlQuery(db)
+    getRefQuery = QSqlQuery()
     getRefQuery.exec("SELECT Date, SID, Gantry, x, y, dx, dy FROM positions")
-    #while getRefQuery.next():
     getRefQuery.first()
 
     referenceData = {"Date": getRefQuery.value("Date"), 
@@ -185,7 +178,6 @@ def load_reference_positions():
                      }
     
     getRefQuery.finish()
-    refCon.close()
 
     return referenceData
 
@@ -200,14 +192,8 @@ def load_tolerances():
         t_reproducibility: 
         }
     """
-    toleranceCon = QSqlDatabase.addDatabase("QSQLITE", "toleranceCon")
-    toleranceCon.setDatabaseName("positions.sqlite")
-    db = QSqlDatabase.database("toleranceCon")
-    if not toleranceCon.open():
-        print(f"Tolerance database error: {toleranceCon.lastError().databaseText()}")
-        sys.exit(1)
     
-    getTolQuery = QSqlQuery(db)
+    getTolQuery = QSqlQuery()
     getTolQuery.exec(
         """
         SELECT tolerance_position,
@@ -227,7 +213,6 @@ def load_tolerances():
                      }
     
     getTolQuery.finish()
-    toleranceCon.close()
 
     return tolerancesData
 
@@ -239,6 +224,4 @@ def get_as_pd_dataframe():
 
 
     df["Date"] = pandas.to_datetime(df["Date"], format = "ISO8601")
-    #del df["Date"]
-    #print(df)
     return df

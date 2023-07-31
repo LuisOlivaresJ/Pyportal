@@ -56,9 +56,10 @@ class PandasModel(QAbstractTableModel):
     # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
     """A model to interface a Qt view with pandas dataframe """
 
-    def __init__(self, dataframe: pandas.DataFrame, parent=None):
+    def __init__(self, dataframe: pandas.DataFrame, tolerances, parent=None):
         QAbstractTableModel.__init__(self, parent)
         self._dataframe = dataframe
+        self.tolerances = tolerances
 
     def rowCount(self, parent=QModelIndex()) -> int:
         """ Override method from QAbstractTableModel
@@ -118,10 +119,10 @@ class PandasModel(QAbstractTableModel):
         if role == Qt.DecorationRole:
             value = self._dataframe.iloc[index.row()][index.column()]
 
-            if index.column() == 5 or index.column() == 6:  # change background only for columns(5,6)
+            if index.column() == 5 or index.column() == 6:  # change icon decoration only for columns(5,6)
                 if (
                     (isinstance(value, int) or isinstance(value, float))
-                    and value >= 2
+                    and abs(value) >= self.tolerances["t_position"]
                 ):
                     return QtGui.QIcon('.\icons\cross.png')
                 else:

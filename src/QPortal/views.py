@@ -21,6 +21,7 @@ from PySide6.QtWidgets import(
     QVBoxLayout,
     QWidget,
     QDialog,
+    QAbstractItemView,
 )
 from PySide6.QtCore import Qt
 
@@ -28,7 +29,7 @@ from pathlib import Path
 
 from model import positionsModel, PandasModel
 from tools import getXY
-from database import load_reference_positions, load_tolerances, get_as_pd_dataframe
+from database import load_reference_positions, load_tolerances, get_as_pd_dataframe, _positions_is_empty
 from settings_gui import Settings_Gui
 
 class Window(QMainWindow):
@@ -60,6 +61,7 @@ class Window(QMainWindow):
         self.table.resizeColumnsToContents()
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QTableView.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         # Create buttons
         self.addButton = QPushButton("Open...")
         self.addButton.clicked.connect(self.openAddDialog)
@@ -154,6 +156,8 @@ class Window(QMainWindow):
 
         if messageBox == QMessageBox.StandardButton.Ok:
             self.positionsModel.clearAll()
+            _positions_is_empty()
+            self.update_plot()
 
     def exportResults(self):
         """Export database."""
@@ -163,8 +167,8 @@ class Window(QMainWindow):
         """This method is used to define user's settings."""
         if self.settings_window == None:
             self.settings_window = Settings_Gui()
-            self.update_plot()
-        self.settings_window.show()
+        self.settings_window.exec()
+        self.update_plot()
 
 #___ end of methods for buttons
 
@@ -173,13 +177,15 @@ class Window(QMainWindow):
         """Update the plot loading the database."""
 
         df = get_as_pd_dataframe()
+        tolerances = load_tolerances()
+        t_position = tolerances["t_position"]
         self.axes.clear()
         #df.plot(x = "Date", y = ["dx", "dy"], kind = "bar", ax = self.axes)
         df.plot(x = "Date", y = ["dx", "dy"], ax = self.axes, style="o")
         #self.axes.bar(x = df["Date"], height = df["dx"])
         self.axes.xaxis.set_major_formatter(mdates.ConciseDateFormatter(self.axes.xaxis.get_major_locator()))
-        self.axes.axhline(2, color = "g")
-        self.axes.axhline(-2, color = "g")
+        self.axes.axhline(t_position, linestyle = "--", linewidth = 3, color = "g", alpha = 0.7)
+        self.axes.axhline(-t_position, linestyle = "--", linewidth = 3, color = "g", alpha = 0.7)
         self.axes.grid(which="both")
         self.axes.set_ylim(bottom = -5, top = 5)
         self.axes.legend(loc = 'upper left')
@@ -214,13 +220,14 @@ class ShowDialog(QDialog):
         """Setup the Show dialog's GUI."""
 
         view = QTableView()
+        view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         view.resizeColumnsToContents()
         view.resize(800, 500)
         view.horizontalHeader().setStretchLastSection(True)
         view.setAlternatingRowColors(True)
         view.setSelectionBehavior(QTableView.SelectRows)
 
-        model = PandasModel(self.dataFrame)
+        model = PandasModel(self.dataFrame, load_tolerances())
         view.setModel(model)
 
         self.layout.addWidget(view)
@@ -230,7 +237,7 @@ class ShowDialog(QDialog):
         self.buttonsBox.setStandardButtons(
             QDialogButtonBox.StandardButton.Ok
         )
-        self.buttonsBox.accepted.connect(self.reject)
+        self.buttonsBox.accepted.connect(self.accept)
         #self.buttonsBox.rejected.connect(self.reject)
         self.layout.addWidget(self.buttonsBox)
 
