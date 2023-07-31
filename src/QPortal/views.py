@@ -21,6 +21,7 @@ from PySide6.QtWidgets import(
     QVBoxLayout,
     QWidget,
     QDialog,
+    QAbstractItemView,
 )
 from PySide6.QtCore import Qt
 
@@ -28,7 +29,8 @@ from pathlib import Path
 
 from model import positionsModel, PandasModel
 from tools import getXY
-from database import get_reference_data, get_as_pd_dataframe
+from database import load_reference_positions, load_tolerances, get_as_pd_dataframe, _positions_is_empty
+from settings_gui import Settings_Gui
 
 class Window(QMainWindow):
     """Main Window."""
@@ -44,6 +46,9 @@ class Window(QMainWindow):
         
         self.positionsModel = positionsModel()
         
+        # Secondary windows
+        self.settings_window = None
+
         self.setupUI()
 
     def setupUI(self):
@@ -56,6 +61,7 @@ class Window(QMainWindow):
         self.table.resizeColumnsToContents()
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QTableView.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         # Create buttons
         self.addButton = QPushButton("Open...")
         self.addButton.clicked.connect(self.openAddDialog)
@@ -65,19 +71,21 @@ class Window(QMainWindow):
         self.exportButton.clicked.connect(self.exportResults)
         self.clearAllButton = QPushButton("Clear All")
         self.clearAllButton.clicked.connect(self.clearAll)
+        self.settingsButton = QPushButton("Settings")
+        self.settingsButton.clicked.connect(self.settings)
         # Create canvas plot view
         self.view_canvas = FigureCanvas(Figure(figsize=(5,3), layout = 'constrained'))
         self.axes = self.view_canvas.figure.subplots()
         self.toolbar = NavigationToolbar2QT(self.view_canvas, self)
         self.update_plot()
 
-        
         #Lay out the GUI
 
         layout = QVBoxLayout()
         layout.addWidget(self.addButton)
         layout.addWidget(self.deleteButton)
         layout.addWidget(self.exportButton)
+        layout.addWidget(self.settingsButton)
         layout.addStretch()
         layout.addWidget(self.clearAllButton)
 
@@ -89,13 +97,13 @@ class Window(QMainWindow):
         self.hlayout.addWidget(self.table)
         self.hlayout.addLayout(plot_layout)
 
-
+# Methods for buttons
 
     def openAddDialog(self):
         """This method is used to add data from new aquired images."""
 
         # Load reference data.
-        ref = get_reference_data()
+        ref = load_reference_positions()
 
         # Open an image dialog to ask for a directory.
         dir = QFileDialog.getExistingDirectory(caption = "Open the folder with the images...", dir="/home")
@@ -121,7 +129,6 @@ class Window(QMainWindow):
         print(type(len(files)))
 
         self.show_results(len(files))
-
 
     def deleteRow(self):
         """Delete the selected row from the database."""
@@ -149,22 +156,36 @@ class Window(QMainWindow):
 
         if messageBox == QMessageBox.StandardButton.Ok:
             self.positionsModel.clearAll()
+            _positions_is_empty()
+            self.update_plot()
 
     def exportResults(self):
         """Export database."""
         return
-    
+
+    def settings(self):
+        """This method is used to define user's settings."""
+        if self.settings_window == None:
+            self.settings_window = Settings_Gui()
+        self.settings_window.exec()
+        self.update_plot()
+
+#___ end of methods for buttons
+
+
     def update_plot(self):
         """Update the plot loading the database."""
 
         df = get_as_pd_dataframe()
+        tolerances = load_tolerances()
+        t_position = tolerances["t_position"]
         self.axes.clear()
         #df.plot(x = "Date", y = ["dx", "dy"], kind = "bar", ax = self.axes)
         df.plot(x = "Date", y = ["dx", "dy"], ax = self.axes, style="o")
         #self.axes.bar(x = df["Date"], height = df["dx"])
         self.axes.xaxis.set_major_formatter(mdates.ConciseDateFormatter(self.axes.xaxis.get_major_locator()))
-        self.axes.axhline(2, color = "g")
-        self.axes.axhline(-2, color = "g")
+        self.axes.axhline(t_position, linestyle = "--", linewidth = 3, color = "g", alpha = 0.7)
+        self.axes.axhline(-t_position, linestyle = "--", linewidth = 3, color = "g", alpha = 0.7)
         self.axes.grid(which="both")
         self.axes.set_ylim(bottom = -5, top = 5)
         self.axes.legend(loc = 'upper left')
@@ -175,11 +196,12 @@ class Window(QMainWindow):
     def show_results(self, n):
         """A method to show the last n results from n loaded files."""
         df = get_as_pd_dataframe()
-        show_dialog = ShowDialog(df.tail(n))
+        #show_dialog = ShowDialog(df.tail(n))
         dialog = ShowDialog(df.tail(n))
-        if dialog.exec() == 1:
-            self.contactsModel.addContact(dialog.data)
-            self.table.resizeColumnsToContents()
+        dialog.exec()
+        #if dialog.exec() == 1:
+        #    self.contactsModel.addContact(dialog.data)
+        #    self.table.resizeColumnsToContents()
             
 class ShowDialog(QDialog):
     """Show results dialog."""
@@ -198,13 +220,14 @@ class ShowDialog(QDialog):
         """Setup the Show dialog's GUI."""
 
         view = QTableView()
+        view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         view.resizeColumnsToContents()
         view.resize(800, 500)
         view.horizontalHeader().setStretchLastSection(True)
         view.setAlternatingRowColors(True)
         view.setSelectionBehavior(QTableView.SelectRows)
 
-        model = PandasModel(self.dataFrame)
+        model = PandasModel(self.dataFrame, load_tolerances())
         view.setModel(model)
 
         self.layout.addWidget(view)
@@ -212,24 +235,14 @@ class ShowDialog(QDialog):
         self.buttonsBox = QDialogButtonBox(self)
         self.buttonsBox.setOrientation(Qt.Orientation.Horizontal)
         self.buttonsBox.setStandardButtons(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+            QDialogButtonBox.StandardButton.Ok
         )
-        self.buttonsBox.accepted.connect(self.acept)
-        self.buttonsBox.rejected.connect(self.reject)
+        self.buttonsBox.accepted.connect(self.accept)
+        #self.buttonsBox.rejected.connect(self.reject)
         self.layout.addWidget(self.buttonsBox)
 
-    def acept(self):
-        """Accept the data provided through the dialog."""
-        self.data = []
-        for field in (self.nameField, self.jobField, self.emailField):
-            if not field.text():
-                QMessageBox.critical(
-                    self,
-                    "Error!",
-                    f"You must provide a contact's {field.objectName()}"
-                )
-                self.data = None #Reset .data
-                return
-            self.data.append(field.text())
-        
-        super().accept()
+    
+    #def acept(self):
+        "Close the window."
+
+    

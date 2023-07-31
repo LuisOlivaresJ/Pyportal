@@ -25,7 +25,8 @@ def getXY(path):
     results = img.results_data()
 
     # Date created
-    dateCreated = img.image.date_created(format="%Y-%m-%d")
+    #dateCreated = img.image.date_created(format="%Y-%m-%d")
+    dateCreated = img.image.date_created(format="%Y-%m-%d %H:%M:%S")
     # Distance from radiation machine source to image plane (in mm) along radiation beam axis.
     sid = float(img.image.metadata['RTImageSID'].value)
     gantry_angle = float(img.image.metadata['GantryAngle'].value)

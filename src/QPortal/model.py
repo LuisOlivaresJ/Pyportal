@@ -56,9 +56,10 @@ class PandasModel(QAbstractTableModel):
     # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
     """A model to interface a Qt view with pandas dataframe """
 
-    def __init__(self, dataframe: pandas.DataFrame, parent=None):
+    def __init__(self, dataframe: pandas.DataFrame, tolerances, parent=None):
         QAbstractTableModel.__init__(self, parent)
         self._dataframe = dataframe
+        self.tolerances = tolerances
 
     def rowCount(self, parent=QModelIndex()) -> int:
         """ Override method from QAbstractTableModel
@@ -118,10 +119,10 @@ class PandasModel(QAbstractTableModel):
         if role == Qt.DecorationRole:
             value = self._dataframe.iloc[index.row()][index.column()]
 
-            if index.column() == 5 or index.column() == 6:  # change background only for columns(5,6)
+            if index.column() == 5 or index.column() == 6:  # change icon decoration only for columns(5,6)
                 if (
                     (isinstance(value, int) or isinstance(value, float))
-                    and value >= 2
+                    and abs(value) >= self.tolerances["t_position"]
                 ):
                     return QtGui.QIcon('.\icons\cross.png')
                 else:
@@ -150,3 +151,20 @@ class PandasModel(QAbstractTableModel):
                 return str(self._dataframe.index[section])
 
         return None
+
+class ToleranceModel:
+    def __init__(self):
+        self.model = self._createModel()
+
+    @staticmethod
+    def _createModel():
+        """Create and set up the model."""
+        tableModel = QSqlTableModel()
+        #tableModel.setFilter("")
+        tableModel.setTable("tolerances")
+        tableModel.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
+        tableModel.select()
+        headers = ("Position [mm]", "Linearity [%]", "Uniformity [%]", "Reproducibility ")
+        for columnIndex, header in enumerate(headers):
+            tableModel.setHeaderData(columnIndex, Qt.Orientation.Horizontal, header)
+        return tableModel
