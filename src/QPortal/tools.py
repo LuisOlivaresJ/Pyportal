@@ -3,6 +3,7 @@
 """This module is used for common operations with DICOM portal images."""
 
 from pylinac import FieldAnalysis, Centering
+import pydicom
 
 def getXY(path):
     """Get the distance (mm) in x and y directions of the detector's center with respect to the beam's center.
@@ -43,3 +44,18 @@ def getXY(path):
             "y": distance_from_beam_center_to_panel_center_Y
     }
 
+def getMU(path):
+
+    ds = pydicom.dcmread(path)
+    um = int(ds.ExposureSequence[0].MetersetExposure)
+    return um
+
+def getCUperMU(path):
+    """Function to get Calibration Units"""
+
+    my_img = FieldAnalysis(path)
+    my_img.analyze(vert_width = 0.1, horiz_width = 0.1)
+    CU = my_img.central_roi.mean
+    um = getMU(path)
+    #CUperUM = CU/um
+    return CU/um

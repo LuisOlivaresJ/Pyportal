@@ -28,8 +28,8 @@ from PySide6.QtCore import Qt
 
 from pathlib import Path
 
-from model import positionsModel, PandasModel
-from tools import getXY
+from model import positionsModel, PandasModel, LinearityModel
+from tools import getXY, getMU, getCUperMU
 from database import load_reference_positions, load_tolerances, get_as_pd_dataframe, _positions_is_empty
 from settings_gui import Settings_Gui
 
@@ -63,11 +63,13 @@ class Window(QMainWindow):
         tab_widget.addTab(ReproducibilityTab(), "Reproducibility")
         
 
-class PositionsTab(QWidget):
+class CoreTab(QWidget):
+    """Main body for TabWidget. It is called from other classes.
+    The class caller will need to set the model to be used for QTableView, and also define the slots to be used for the buttons' signlas. 
+    """
     def __init__(self, parent = None):
         """Initializer."""
         super().__init__(parent)
-        self.positionsModel = positionsModel()
 
         # Secondary windows
         self.settings_window = None
@@ -81,7 +83,7 @@ class PositionsTab(QWidget):
 
         # Create the table view widget
         self.table = QTableView()
-        self.table.setModel(self.positionsModel.model)
+        #self.table.setModel(self.positionsModel.model)
         self.table.resizeColumnsToContents()
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QTableView.SelectRows)
@@ -123,6 +125,19 @@ class PositionsTab(QWidget):
         self.hlayout.addLayout(plot_layout)
 
         self.setLayout(self.hlayout)
+
+class PositionsTab(CoreTab):
+    def __init__(self, parent = None):
+        """Initializer."""
+        super().__init__(parent)
+        self.positionsModel = positionsModel()
+
+        self.setupCoreUI()
+
+    def setupCoreUI(self):
+        """Setup the main window's GUI."""
+        
+        self.table.setModel(self.positionsModel.model)
 
 # Methods for buttons
 
@@ -230,14 +245,124 @@ class PositionsTab(QWidget):
         #    self.contactsModel.addContact(dialog.data)
         #    self.table.resizeColumnsToContents()
 
-class LinearityTab(QWidget):
+class LinearityTab(CoreTab):
     def __init__(self):
         super().__init__()
 
-        self.setup()
+        self.setupCoreUI()
 
-    def setup(self):
-        """"""
+    def setupCoreUI(self):
+        """Setup the Linearity Tab."""
+        
+        self.linearityModel = LinearityModel()
+        self.table.setModel(self.linearityModel.model)
+
+# Methods for buttons
+
+    def openAddDialog(self):
+        """This method is used to add data from new aquired images."""
+
+        # Open an image dialog to ask for a directory.
+        dir = QFileDialog.getExistingDirectory(caption = "Open the folder with the images...", dir="/home")
+        # Filter 
+        files = list(Path(dir).glob("RI*.dcm"))
+     
+        # For loop for reference imaga identification
+        for file in files:
+
+            um = getMU(path=file)
+            if um == 100:
+                
+                ref = getCUperMU(file)
+                #print(CU_ref)
+        for file in files:
+
+            CUperMU = getCUperMU(file)
+            dCU = abs(round((CUperMU - ref) / ref * 100, 1))
+            print(dCU)
+         
+            #self.positionsModel.addPosition(xy_results)
+        """
+        self.table.resizeColumnsToContents()
+        self.update_plot()
+        print("Número de archivos:")
+        print(type(len(files)))
+
+        self.show_results(len(files))
+        """
+
+    def deleteRow(self):
+        """Delete the selected row from the database."""
+        row = self.table.currentIndex().row()
+        if row < 0:
+            return
+        messageBox = QMessageBox.warning(
+            self,
+            "Warning!",
+            "Do you want to remove the selected rwo?",
+            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
+        )
+
+        if messageBox == QMessageBox.StandardButton.Ok:
+            self.positionsModel.deleteRow(row)
+
+    def clearAll(self):
+        """Remove all positions from the database."""
+        messageBox = QMessageBox.warning(
+            self,
+            "Warning!",
+            "Do you want to remove all data?",
+            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
+        )
+
+        if messageBox == QMessageBox.StandardButton.Ok:
+            self.positionsModel.clearAll()
+            _positions_is_empty()
+            self.update_plot()
+
+    def exportResults(self):
+        """Export database."""
+        return
+
+    def settings(self):
+        """This method is used to define user's settings."""
+        if self.settings_window == None:
+            self.settings_window = Settings_Gui()
+        self.settings_window.exec()
+        self.update_plot()
+
+#___ end of methods for buttons
+
+
+    def update_plot(self):
+        """Update the plot loading the database."""
+
+        df = get_as_pd_dataframe()
+        tolerances = load_tolerances()
+        t_position = tolerances["t_position"]
+        self.axes.clear()
+        #df.plot(x = "Date", y = ["dx", "dy"], kind = "bar", ax = self.axes)
+        df.plot(x = "Date", y = ["dx", "dy"], ax = self.axes, style="o")
+        #self.axes.bar(x = df["Date"], height = df["dx"])
+        self.axes.xaxis.set_major_formatter(mdates.ConciseDateFormatter(self.axes.xaxis.get_major_locator()))
+        self.axes.axhline(t_position, linestyle = "--", linewidth = 3, color = "g", alpha = 0.7)
+        self.axes.axhline(-t_position, linestyle = "--", linewidth = 3, color = "g", alpha = 0.7)
+        self.axes.grid(which="both")
+        self.axes.set_ylim(bottom = -5, top = 5)
+        self.axes.legend(loc = 'upper left')
+        self.axes.set_ylabel("Variation [mm]")
+
+        self.view_canvas.draw()
+
+    def show_results(self, n):
+        """A method to show the last n results from n loaded files."""
+        df = get_as_pd_dataframe()
+        #show_dialog = ShowDialog(df.tail(n))
+        dialog = ShowDialog(df.tail(n))
+        dialog.exec()
+        #if dialog.exec() == 1:
+        #    self.contactsModel.addContact(dialog.data)
+        #    self.table.resizeColumnsToContents()
 
 class UniformityTab(QWidget):
     def __init__(self):
