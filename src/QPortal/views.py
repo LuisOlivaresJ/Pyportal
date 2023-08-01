@@ -36,22 +36,39 @@ from settings_gui import Settings_Gui
 class Window(QMainWindow):
     """Main Window."""
     def __init__(self, parent = None):
-        """Initializer."""
+        """Initializer.
+        
+        centralWidget
+            main_layout
+                tab_widget
+                    PositioningTab
+                    LinearityTab
+        """
         super().__init__(parent)
         self.setWindowTitle("QPortal")
-        self.resize(950, 350)
+        self.resize(1000, 400)
 
-        self.centralWidget = QWidget()              
-        self.main_layout = QVBoxLayout()
-        tab_widget = QTabWidget()
-
-        self.positions_tab = QWidget()
-        self.main_layout.addWidget(self.positions_tab)
-        self.setLayout(self.main_layout)
+        self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
+              
+        self.main_layout = QVBoxLayout()
+        self.centralWidget.setLayout(self.main_layout)
+              
+        tab_widget = QTabWidget()
+        self.main_layout.addWidget(tab_widget)
+
+        tab_widget.addTab(PositionsTab(), "Positioning")
+        tab_widget.addTab(LinearityTab(), "Linearity")
+        tab_widget.addTab(UniformityTab(), "Uniformity")
+        tab_widget.addTab(ReproducibilityTab(), "Reproducibility")
         
+
+class PositionsTab(QWidget):
+    def __init__(self, parent = None):
+        """Initializer."""
+        super().__init__(parent)
         self.positionsModel = positionsModel()
-        
+
         # Secondary windows
         self.settings_window = None
 
@@ -105,7 +122,7 @@ class Window(QMainWindow):
         self.hlayout.addWidget(self.table)
         self.hlayout.addLayout(plot_layout)
 
-        self.positions_tab.setLayout(self.hlayout)
+        self.setLayout(self.hlayout)
 
 # Methods for buttons
 
@@ -212,7 +229,34 @@ class Window(QMainWindow):
         #if dialog.exec() == 1:
         #    self.contactsModel.addContact(dialog.data)
         #    self.table.resizeColumnsToContents()
-            
+
+class LinearityTab(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setup()
+
+    def setup(self):
+        """"""
+
+class UniformityTab(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setup()
+
+    def setup(self):
+        """"""
+
+class ReproducibilityTab(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setup()
+
+    def setup(self):
+        """"""
+
 class ShowDialog(QDialog):
     """Show results dialog."""
     def __init__(self, dataFrame, parent=None):
@@ -248,11 +292,8 @@ class ShowDialog(QDialog):
             QDialogButtonBox.StandardButton.Ok
         )
         self.buttonsBox.accepted.connect(self.accept)
-        #self.buttonsBox.rejected.connect(self.reject)
         self.layout.addWidget(self.buttonsBox)
 
-    
-    #def acept(self):
-        "Close the window."
+
 
     
