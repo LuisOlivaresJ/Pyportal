@@ -61,21 +61,21 @@ class LinearityModel:
         """Create and set up the model."""
         tableModel = QSqlTableModel()
         #tableModel.setFilter("")
-        tableModel.setTable("positions")
+        tableModel.setTable("linearity")
         #tableModel.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
         tableModel.select()
-        headers = ("Date", "SID", "G°", "x", "y", "dx", "dy")
+        headers = ("Date", "MU", "CU", "CU/MU", "Variation [%]")
         for columnIndex, header in enumerate(headers):
             tableModel.setHeaderData(columnIndex, Qt.Orientation.Horizontal, header)
         return tableModel
     
-    def addPosition(self, position):
-        """Add a position to the database."""
-        print(position)
+    def addNewResults(self, results):
+        """Add new results to the database."""
+        print(results)
         rows = self.model.rowCount()
         self.model.insertRows(rows, 1)
-        for column, field in enumerate(position):
-            self.model.setData(self.model.index(rows, column), position[field])
+        for column, field in enumerate(results):
+            self.model.setData(self.model.index(rows, column), results[field])
         self.model.submitAll()
         self.model.select()
 
@@ -98,11 +98,13 @@ class PandasModel(QAbstractTableModel):
     # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
     """A model to interface a Qt view with pandas dataframe """
 
-    def __init__(self, dataframe: pandas.DataFrame, tolerances, parent=None):
+    def __init__(self, dataframe: pandas.DataFrame, tolerance, columns, headers, parent=None):
         QAbstractTableModel.__init__(self, parent)
         self._dataframe = dataframe
-        self.tolerances = tolerances
-
+        self.tolerance = tolerance
+        self.columns = columns
+        self.headers = headers
+    
     def rowCount(self, parent=QModelIndex()) -> int:
         """ Override method from QAbstractTableModel
 
@@ -161,17 +163,17 @@ class PandasModel(QAbstractTableModel):
         if role == Qt.DecorationRole:
             value = self._dataframe.iloc[index.row()][index.column()]
 
-            if index.column() == 5 or index.column() == 6:  # change icon decoration only for columns(5,6)
+            if index.column() in self.columns:  # change icon decoration only for columns(5,6)
                 if (
                     (isinstance(value, int) or isinstance(value, float))
-                    and abs(value) >= self.tolerances["t_position"]
+                    and abs(value) >= self.tolerance
                 ):
                     return QtGui.QIcon('.\icons\cross.png')
                 else:
                     return QtGui.QIcon('.\icons\\accept.png')
                 
         if role == Qt.FontRole:
-            if index.column() == 5 or index.column() == 6:  # change font
+            if index.column() in self.columns:  # change font
                 bold_font = QtGui.QFont()
                 bold_font.setBold(True)
                 return bold_font
@@ -187,7 +189,7 @@ class PandasModel(QAbstractTableModel):
         """
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                return str(self._dataframe.columns[section])
+                return str(self.headers[section])
 
             if orientation == Qt.Vertical:
                 return str(self._dataframe.index[section])
@@ -210,3 +212,4 @@ class ToleranceModel:
         for columnIndex, header in enumerate(headers):
             tableModel.setHeaderData(columnIndex, Qt.Orientation.Horizontal, header)
         return tableModel
+    

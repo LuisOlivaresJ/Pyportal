@@ -35,8 +35,11 @@ def createConnection(databaseName):
     print("SQL Connection Successfully Opened!")
     _createPositionsTable()
     _createUserToleranceTable()
+    _createLinearityTable()
+    _createUniformityTable()
     _positions_is_empty()
     _tolerances_is_empty()
+    #_linearity_is_empty()
     return True
 
 def _createPositionsTable():
@@ -57,7 +60,7 @@ def _createPositionsTable():
     )
 
 def _createUserToleranceTable():
-    """Used to create user settings like tolerances for test."""
+    """Table used to create save linearity constancy."""
     createTableQuery = QSqlQuery()
     createTableQuery.exec(
         """
@@ -66,6 +69,37 @@ def _createUserToleranceTable():
         tolerance_linearity REAL NOT NULL,
         tolerance_uniformity REAL NOT NULL,
         tolerance_reproducibility REAL NOT NULL
+        )
+        """
+    )
+    createTableQuery.finish()
+
+def _createLinearityTable():
+    """Used to create user settings like tolerances for test."""
+    createTableQuery = QSqlQuery()
+    createTableQuery.exec(
+        """
+        CREATE TABLE IF NOT EXISTS linearity (
+        date VARCHAR(25) NOT NULL,
+        mu REAL NOT NULL,
+        cu REAL NOT NULL,
+        cu_mu REAL NOT NULL,
+        variation REAL NOT NULL
+        )
+        """
+    )
+    createTableQuery.finish()
+
+def _createUniformityTable():
+    """Used to create user settings like tolerances for test."""
+    createTableQuery = QSqlQuery()
+    createTableQuery.exec(
+        """
+        CREATE TABLE IF NOT EXISTS uniformity (
+        Date VARCHAR(25) NOT NULL,
+        Mean REAL NOT NULL,
+        STD REAL NOT NULL,
+        STD_Mean REAL NOT NULL
         )
         """
     )
@@ -116,6 +150,15 @@ def _positions_is_empty():
 
     else:
         return
+
+def _linearity_is_empty():
+    """ 
+    If there are no fields in the record database, returns True
+    """
+    isEmptyQuery = QSqlQuery()
+    isEmptyQuery.exec("SELECT * FROM linearity")
+    return isEmptyQuery.first()
+
 def _tolerances_is_empty():
     """ 
     Set default tolerances when app is first used. 
@@ -223,5 +266,15 @@ def get_as_pd_dataframe():
     get_db_con.close()
 
 
-    df["Date"] = pandas.to_datetime(df["Date"], format = "ISO8601")
+    df["Date"] = pandas.to_datetime(df["Date"], format="%Y-%m-%d")
+    return df
+
+def get_linearity_as_pd_dataframe():
+    """Get linearity database as pandas DataFrame instance."""
+    get_db_con = sqlite3.connect("positions.sqlite")
+    df = pandas.read_sql_query("SELECT * FROM linearity", get_db_con)
+    get_db_con.close()
+
+
+    df["date"] = pandas.to_datetime(df["date"], format="%Y-%m-%d")
     return df

@@ -30,7 +30,7 @@ from pathlib import Path
 
 from model import positionsModel, PandasModel, LinearityModel
 from tools import getXY, getMU, getCUperMU
-from database import load_reference_positions, load_tolerances, get_as_pd_dataframe, _positions_is_empty
+from database import load_reference_positions, load_tolerances, get_as_pd_dataframe, _positions_is_empty, get_linearity_as_pd_dataframe, _linearity_is_empty
 from settings_gui import Settings_Gui
 
 class Window(QMainWindow):
@@ -84,7 +84,6 @@ class CoreTab(QWidget):
         # Create the table view widget
         self.table = QTableView()
         #self.table.setModel(self.positionsModel.model)
-        self.table.resizeColumnsToContents()
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QTableView.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -103,7 +102,6 @@ class CoreTab(QWidget):
         self.view_canvas = FigureCanvas(Figure(figsize=(5,3), layout = 'constrained'))
         self.axes = self.view_canvas.figure.subplots()
         self.toolbar = NavigationToolbar2QT(self.view_canvas, self)
-        self.update_plot()
 
         #Lay out the GUI
         self.hlayout = QHBoxLayout()
@@ -138,6 +136,8 @@ class PositionsTab(CoreTab):
         """Setup the main window's GUI."""
         
         self.table.setModel(self.positionsModel.model)
+        self.table.resizeColumnsToContents()
+        self.update_plot()
 
 # Methods for buttons
 
@@ -169,8 +169,9 @@ class PositionsTab(CoreTab):
         self.update_plot()
         print("Número de archivos:")
         print(type(len(files)))
+        print(load_tolerances()["t_position"])
 
-        self.show_results(len(files))
+        self.show_results(len(files), load_tolerances()["t_position"], [5,6])
 
     def deleteRow(self):
         """Delete the selected row from the database."""
@@ -235,11 +236,12 @@ class PositionsTab(CoreTab):
 
         self.view_canvas.draw()
 
-    def show_results(self, n):
+    def show_results(self, n, tolerance, columns):
         """A method to show the last n results from n loaded files."""
         df = get_as_pd_dataframe()
         #show_dialog = ShowDialog(df.tail(n))
-        dialog = ShowDialog(df.tail(n))
+        headers = ["Date", "SID", "G°", "x", "y", "dx", "dy"]
+        dialog = ShowDialog(df.tail(n), tolerance, columns, headers)
         dialog.exec()
         #if dialog.exec() == 1:
         #    self.contactsModel.addContact(dialog.data)
@@ -256,6 +258,12 @@ class LinearityTab(CoreTab):
         
         self.linearityModel = LinearityModel()
         self.table.setModel(self.linearityModel.model)
+        self.table.resizeColumnsToContents()
+
+        print(_linearity_is_empty())
+        if _linearity_is_empty():
+            self.update_plot()
+        
 
 # Methods for buttons
 
@@ -270,7 +278,7 @@ class LinearityTab(CoreTab):
         # For loop for reference imaga identification
         for file in files:
 
-            um = getMU(path=file)
+            um = int(getMU(path=file))
             if um == 100:
                 
                 ref = getCUperMU(file)
@@ -278,18 +286,20 @@ class LinearityTab(CoreTab):
         for file in files:
 
             CUperMU = getCUperMU(file)
-            dCU = abs(round((CUperMU - ref) / ref * 100, 1))
-            print(dCU)
+            dCU = {"Variation": abs(round((CUperMU["CU/MU"] - ref["CU/MU"]) / ref["CU/MU"] * 100, 3))}
+            results = {**CUperMU, **dCU}
+            print(results)
          
-            #self.positionsModel.addPosition(xy_results)
-        """
+            self.linearityModel.addNewResults(results)
+
+
         self.table.resizeColumnsToContents()
         self.update_plot()
-        print("Número de archivos:")
-        print(type(len(files)))
 
-        self.show_results(len(files))
-        """
+        columns = []
+        columns.append(4)
+        self.show_results(len(files), load_tolerances()["t_linearity"], columns)
+
 
     def deleteRow(self):
         """Delete the selected row from the database."""
@@ -304,7 +314,7 @@ class LinearityTab(CoreTab):
         )
 
         if messageBox == QMessageBox.StandardButton.Ok:
-            self.positionsModel.deleteRow(row)
+            self.linearityModel.deleteRow(row)
 
     def clearAll(self):
         """Remove all positions from the database."""
@@ -316,9 +326,10 @@ class LinearityTab(CoreTab):
         )
 
         if messageBox == QMessageBox.StandardButton.Ok:
-            self.positionsModel.clearAll()
-            _positions_is_empty()
-            self.update_plot()
+            self.linearityModel.clearAll()
+            #_positions_is_empty()
+            self.axes.clear()
+            self.view_canvas.draw()
 
     def exportResults(self):
         """Export database."""
@@ -337,12 +348,12 @@ class LinearityTab(CoreTab):
     def update_plot(self):
         """Update the plot loading the database."""
 
-        df = get_as_pd_dataframe()
+        df = get_linearity_as_pd_dataframe()
         tolerances = load_tolerances()
-        t_position = tolerances["t_position"]
+        t_position = tolerances["t_linearity"]
         self.axes.clear()
         #df.plot(x = "Date", y = ["dx", "dy"], kind = "bar", ax = self.axes)
-        df.plot(x = "Date", y = ["dx", "dy"], ax = self.axes, style="o")
+        df.plot(x = "date", y = ["variation"], ax = self.axes, style="o")
         #self.axes.bar(x = df["Date"], height = df["dx"])
         self.axes.xaxis.set_major_formatter(mdates.ConciseDateFormatter(self.axes.xaxis.get_major_locator()))
         self.axes.axhline(t_position, linestyle = "--", linewidth = 3, color = "g", alpha = 0.7)
@@ -350,15 +361,18 @@ class LinearityTab(CoreTab):
         self.axes.grid(which="both")
         self.axes.set_ylim(bottom = -5, top = 5)
         self.axes.legend(loc = 'upper left')
-        self.axes.set_ylabel("Variation [mm]")
+        self.axes.set_ylabel("Variation [%]")
 
         self.view_canvas.draw()
 
-    def show_results(self, n):
+    def show_results(self, n, tolerance, columns):
         """A method to show the last n results from n loaded files."""
-        df = get_as_pd_dataframe()
+        df = get_linearity_as_pd_dataframe()
         #show_dialog = ShowDialog(df.tail(n))
-        dialog = ShowDialog(df.tail(n))
+
+        headers = ["Date", "MU", "CU", "CU/MU", "Variation [%]"]
+        dialog = ShowDialog(df.tail(n), tolerance, columns, headers)
+
         dialog.exec()
         #if dialog.exec() == 1:
         #    self.contactsModel.addContact(dialog.data)
@@ -384,14 +398,17 @@ class ReproducibilityTab(QWidget):
 
 class ShowDialog(QDialog):
     """Show results dialog."""
-    def __init__(self, dataFrame, parent=None):
+    def __init__(self, dataFrame, tolerance, columns, headers, parent=None):
         """Initializer."""
         super().__init__(parent=parent)
         self.setWindowTitle("Results")
-        self.resize(750, 350)
+        self.resize(450, 350)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.dataFrame = dataFrame
+        self.tolerance = tolerance
+        self.columns = columns
+        self.headers = headers
 
         self.setupUI()
 
@@ -400,14 +417,14 @@ class ShowDialog(QDialog):
 
         view = QTableView()
         view.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        view.resizeColumnsToContents()
         view.resize(800, 500)
         view.horizontalHeader().setStretchLastSection(True)
         view.setAlternatingRowColors(True)
         view.setSelectionBehavior(QTableView.SelectRows)
 
-        model = PandasModel(self.dataFrame, load_tolerances())
-        view.setModel(model)
+        self.model = PandasModel(self.dataFrame, self.tolerance, self.columns, self.headers)
+        view.setModel(self.model)
+        view.resizeColumnsToContents()
 
         self.layout.addWidget(view)
         # Add standar buttons to the dialog and connect them
