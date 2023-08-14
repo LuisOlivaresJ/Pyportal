@@ -275,7 +275,7 @@ class LinearityTab(CoreTab):
         # Filter 
         files = list(Path(dir).glob("RI*.dcm"))
      
-        # For loop for reference imaga identification
+        # For loop for reference image identification
         for file in files:
 
             um = int(getMU(path=file))

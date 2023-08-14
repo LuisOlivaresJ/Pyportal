@@ -108,7 +108,7 @@ def _createUniformityTable():
 def _positions_is_empty():
     """ 
     If there are no fields in the record database, opens a QDialog window to ask for a file that is going to be 
-    used to get the reference portal position, saving it as the first row. Otherwise, returns 
+    used to set the reference portal position, saving it as the first row. Otherwise, returns 
     """
     isEmptyQuery = QSqlQuery()
     isEmptyQuery.exec("SELECT Date, SID, Gantry, x, y, dx, dy FROM positions")
@@ -270,7 +270,7 @@ def get_as_pd_dataframe():
     return df
 
 def get_linearity_as_pd_dataframe():
-    """Get linearity database as pandas DataFrame instance."""
+    """Get linearity database table as pandas DataFrame instance."""
     get_db_con = sqlite3.connect("positions.sqlite")
     df = pandas.read_sql_query("SELECT * FROM linearity", get_db_con)
     get_db_con.close()

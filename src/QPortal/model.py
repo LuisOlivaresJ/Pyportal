@@ -86,7 +86,7 @@ class LinearityModel:
         self.model.select()
 
     def clearAll(self):
-        """Remoce all data in the database."""
+        """Remove all data in the database."""
         self.model.setEditStrategy(QSqlTableModel.EditStrategy.OnManualSubmit)
         self.model.removeRows(0, self.model.rowCount())
         self.model.submitAll()
