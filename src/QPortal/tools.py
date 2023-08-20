@@ -164,6 +164,12 @@ class UniformityAnalysis:
             The width ratio of the image to sample. E.g. at the default of 0.0 a 1 pixel wide ROI is extracted.
             0.0 would be 1 pixel wide and 1.0 would be the horizontal image width.
 
+        Returns
+        -------
+
+        dictionary
+            {Date, Mean, STD, Uniformity, Nun_pixels}
+            
         
         """
         
@@ -186,14 +192,19 @@ class UniformityAnalysis:
         props = measure.regionprops(label_rectangle, intensity_image = self.image.array, extra_properties=[stdev])
         print(props[0].intensity_mean)
                 
-        self.mean = props[0].intensity_mean
-        self.std = props[0].stdev
-        self.num_pixels = props[0].num_pixels
+        self.mean = float(round(props[0].intensity_mean, 2))
+        self.std = float(round(props[0].stdev, 2))
+        self.num_pixels = int(props[0].num_pixels)
 
-        self.uniformity = self.std / self.mean * 100
+        self.uniformity = float(round(self.std / self.mean * 100, 2))
         self._is_analyzed = True
-        return self.uniformity
-
+        return {"Date": self.image.date_created(format="%Y-%m-%d"),
+                "Mean": self.mean, 
+                "STD": self.std, 
+                "Uniformity": self.uniformity, 
+                "Num_pixels": self.num_pixels,
+               }
+    
     def results(self, as_str=True) -> str:
         """Get the results of the analysis.
 

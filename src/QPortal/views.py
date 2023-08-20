@@ -28,9 +28,12 @@ from PySide6.QtCore import Qt
 
 from pathlib import Path
 
-from model import positionsModel, PandasModel, LinearityModel
-from tools import getXY, getMU, getCUperMU
-from database import load_reference_positions, load_tolerances, get_as_pd_dataframe, _positions_is_empty, get_linearity_as_pd_dataframe, _linearity_is_empty
+from model import positionsModel, PandasModel, LinearityModel, UniformityModel
+from tools import getXY, getMU, getCUperMU, UniformityAnalysis
+from database import (
+    load_reference_positions, load_tolerances, get_as_pd_dataframe, 
+    _positions_is_empty, get_linearity_as_pd_dataframe, _linearity_is_empty,
+    get_uniformity_as_pd_dataframe, _uniformity_is_empty)
 from settings_gui import Settings_Gui
 
 class Window(QMainWindow):
@@ -43,6 +46,7 @@ class Window(QMainWindow):
                 tab_widget
                     PositioningTab
                     LinearityTab
+                    UniformityTab
         """
         super().__init__(parent)
         self.setWindowTitle("QPortal")
@@ -260,7 +264,7 @@ class LinearityTab(CoreTab):
         self.table.setModel(self.linearityModel.model)
         self.table.resizeColumnsToContents()
 
-        print(_linearity_is_empty())
+        #print(_linearity_is_empty())
         if _linearity_is_empty():
             self.update_plot()
         
@@ -378,14 +382,122 @@ class LinearityTab(CoreTab):
         #    self.contactsModel.addContact(dialog.data)
         #    self.table.resizeColumnsToContents()
 
-class UniformityTab(QWidget):
+class UniformityTab(CoreTab):
     def __init__(self):
         super().__init__()
 
         self.setup()
 
     def setup(self):
-        """"""
+        """Setup the Uniformity Tab."""
+        
+        self.uniformityModel = UniformityModel()
+        self.table.setModel(self.uniformityModel.model)
+        self.table.resizeColumnsToContents()
+
+        #print(_linearity_is_empty())
+        if _uniformity_is_empty():
+            self.update_plot()
+
+# Methods for buttons
+
+    def openAddDialog(self):
+        """This method is used to add data from new aquired images."""
+
+        # Open an image dialog to ask for a directory.
+        dir = QFileDialog.getExistingDirectory(caption = "Open the folder with the images...", dir="/home")
+        # Filter 
+        files = list(Path(dir).glob("RI*.dcm"))
+     
+        for file in files:
+
+            img = UniformityAnalysis(file)
+            uniformity_results = img.get_uniformity()
+            print(uniformity_results)
+         
+            self.uniformityModel.addNewResults(uniformity_results)
+
+
+        self.table.resizeColumnsToContents()
+        self.update_plot()
+
+        columns = []
+        columns.append(3)
+        self.show_results(len(files), load_tolerances()["t_uniformity"], columns)
+
+
+    def deleteRow(self):
+        """Delete the selected row from the database."""
+        row = self.table.currentIndex().row()
+        if row < 0:
+            return
+        messageBox = QMessageBox.warning(
+            self,
+            "Warning!",
+            "Do you want to remove the selected rwo?",
+            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
+        )
+
+        if messageBox == QMessageBox.StandardButton.Ok:
+            self.uniformityModel.deleteRow(row)
+
+    def clearAll(self):
+        """Remove all positions from the database."""
+        messageBox = QMessageBox.warning(
+            self,
+            "Warning!",
+            "Do you want to remove all data?",
+            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
+        )
+
+        if messageBox == QMessageBox.StandardButton.Ok:
+            self.uniformityModel.clearAll()
+            #_positions_is_empty()
+            self.axes.clear()
+            self.view_canvas.draw()
+
+    def exportResults(self):
+        """Export database."""
+        return
+
+    def settings(self):
+        """This method is used to define user's settings."""
+        if self.settings_window == None:
+            self.settings_window = Settings_Gui()
+        self.settings_window.exec()
+        self.update_plot()
+
+#___ end of methods for buttons
+
+    def update_plot(self):
+        """Update the plot loading the database."""
+
+        df = get_uniformity_as_pd_dataframe()
+        tolerances = load_tolerances()
+        t_uniformity = tolerances["t_uniformity"]
+        self.axes.clear()
+        #df.plot(x = "Date", y = ["dx", "dy"], kind = "bar", ax = self.axes)
+        df.plot(x = "Date", y = ["Uniformity"], ax = self.axes, style="o")
+        #self.axes.bar(x = df["Date"], height = df["dx"])
+        self.axes.xaxis.set_major_formatter(mdates.ConciseDateFormatter(self.axes.xaxis.get_major_locator()))
+        self.axes.axhline(t_uniformity, linestyle = "--", linewidth = 3, color = "g", alpha = 0.7)
+        self.axes.axhline(-t_uniformity, linestyle = "--", linewidth = 3, color = "g", alpha = 0.7)
+        self.axes.grid(which="both")
+        self.axes.set_ylim(bottom = -5, top = 5)
+        self.axes.legend(loc = 'upper left')
+        self.axes.set_ylabel("Uniformity [%]")
+
+        self.view_canvas.draw()
+
+    def show_results(self, n, tolerance, columns):
+        """A method to show the last n results from n loaded files."""
+        df = get_uniformity_as_pd_dataframe()
+        #show_dialog = ShowDialog(df.tail(n))
+
+        headers = ["Date", "Mean", "STD", "Uniformity [%]", "Num. pixels"]
+        dialog = ShowDialog(df.tail(n), tolerance, columns, headers)
+
+        dialog.exec()
 
 class ReproducibilityTab(QWidget):
     def __init__(self):

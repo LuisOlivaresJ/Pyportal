@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""This module provides QPortal application."""
+"""This module provides QPortal application access point."""
 
 import sys
 from PySide6.QtWidgets import QApplication

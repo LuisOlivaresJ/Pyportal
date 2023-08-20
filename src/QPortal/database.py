@@ -91,7 +91,7 @@ def _createLinearityTable():
     createTableQuery.finish()
 
 def _createUniformityTable():
-    """Used to create user settings like tolerances for test."""
+    """Used to create uniformity."""
     createTableQuery = QSqlQuery()
     createTableQuery.exec(
         """
@@ -99,7 +99,8 @@ def _createUniformityTable():
         Date VARCHAR(25) NOT NULL,
         Mean REAL NOT NULL,
         STD REAL NOT NULL,
-        STD_Mean REAL NOT NULL
+        Uniformity REAL NOT NULL,
+        Num_pixels REAL NOT NULL
         )
         """
     )
@@ -157,6 +158,14 @@ def _linearity_is_empty():
     """
     isEmptyQuery = QSqlQuery()
     isEmptyQuery.exec("SELECT * FROM linearity")
+    return isEmptyQuery.first()
+
+def _uniformity_is_empty():
+    """ 
+    If there are no fields in the record database, returns True
+    """
+    isEmptyQuery = QSqlQuery()
+    isEmptyQuery.exec("SELECT * FROM uniformity")
     return isEmptyQuery.first()
 
 def _tolerances_is_empty():
@@ -277,4 +286,14 @@ def get_linearity_as_pd_dataframe():
 
 
     df["date"] = pandas.to_datetime(df["date"], format="%Y-%m-%d")
+    return df
+
+def get_uniformity_as_pd_dataframe():
+    """Get uniformity database table as pandas DataFrame instance."""
+    get_db_con = sqlite3.connect("positions.sqlite")
+    df = pandas.read_sql_query("SELECT * FROM uniformity", get_db_con)
+    get_db_con.close()
+
+
+    df["Date"] = pandas.to_datetime(df["Date"], format="%Y-%m-%d")
     return df
