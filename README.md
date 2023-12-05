@@ -58,7 +58,7 @@ From the columns
 * SID: Source to image distance
 * G°: Gantry angle
 * x (or y): Distance from beam center to the center of the panel in x (y) direction.
-* dx (or dy): Difference in x (y) with respect a reference position. The reference is taken as the first loaded data in the dataset (first row in the table).
+* dx (or dy): Difference in x (y) with respect the first loaded data in the dataset (first row in the table).
 
 ## Linearity with dose
 
