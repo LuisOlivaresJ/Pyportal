@@ -49,9 +49,7 @@ Repeat the 10 cm × 10 cm image at 45° gantry angle increments. Measure the cen
 
 ### Results
 
-<p align="center">
-<img src="/docs/Positioning.PNG">
-</p>
+![Positioning](/docs/images/Positioning.PNG)
 
 From the columns
 
@@ -68,9 +66,7 @@ First determine that the Linac MU linearity is within TG-142 tolerance, then irr
 
 ### Results
 
-<p align="center">
-<img src="/docs/Linearity_results.png">
-</p>
+![Positioning](/docs/images/Linearity_results.png)
 
 * MU: Monitor units used for irradiation.
 * CU: Mean pixel value (ROI area of 10% respect to entire image, at the center.)
@@ -84,9 +80,7 @@ After flood-field calibration, irradiate the entire EPID sensitive area with 100
 
 ### Results
 
-<p align="center">
-<img src="/docs/Uniformity.png">
-</p>
+![Positioning](/docs/images/Uniformity.png)
 
 * Mean: Mean pixel over the image. %5 of each border is exluded.
 * STD: Standar deviation.
