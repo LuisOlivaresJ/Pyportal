@@ -70,8 +70,9 @@ First determine that the Linac MU linearity is within TG-142 tolerance, then irr
 ![Positioning](/docs/images/Linearity_results.png)
 
 * MU: Monitor units used for irradiation.
-* CU: Mean pixel value (ROI area of 10% respect to entire image, at the center.)
-* Variation: Percentage difference with respect the image acquired using 100 MU.
+* CU: Mean Calibration Unit (ROI area of 10% respect to entire image, at the center).
+* CU/MU: CU per MU.
+* Variation: Percentage difference between CU/UM with respect the image acquired using 100 MU.
 
 ## Uniformity
 
