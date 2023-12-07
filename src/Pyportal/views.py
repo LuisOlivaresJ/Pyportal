@@ -49,7 +49,7 @@ class Window(QMainWindow):
                     UniformityTab
         """
         super().__init__(parent)
-        self.setWindowTitle("QPortal")
+        self.setWindowTitle("Pyportal")
         self.resize(1000, 400)
 
         self.centralWidget = QWidget()
@@ -68,7 +68,7 @@ class Window(QMainWindow):
         
 
 class CoreTab(QWidget):
-    """Main body for TabWidget. It is called from other classes.
+    """Main body for TabWidget. It is called from other classes like PositionsTab, LinearityTab, etc.
     The class caller will need to set the model to be used for QTableView, and also define the slots to be used for the buttons' signlas. 
     """
     def __init__(self, parent = None):
@@ -81,7 +81,7 @@ class CoreTab(QWidget):
         self.setupUI()
 
     def setupUI(self):
-        """Setup the main window's GUI."""
+        """Setup the CoreTab body."""
         
         # Create widgets
 
