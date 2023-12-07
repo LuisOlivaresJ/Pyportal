@@ -1,6 +1,6 @@
 # Pyportal
 
-Pyportal is a graphical user interface for performing [TG-307](https://doi.org/10.1002/mp.16536) quality assurance (QA) tests for routine QA of EPID systems.
+Pyportal is a graphical user interface for performing [TG-307](https://doi.org/10.1002/mp.16536) quality assurance (QA) tests for routine QA of (R) Varian EPID systems.
 The program is still in early development and may contain bugs.
 
 ## Features

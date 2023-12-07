@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""This module provides QPortal application access point."""
+"""This module provides Pyportal application access point."""
 
 import sys
 from PySide6.QtWidgets import QApplication
@@ -9,7 +9,7 @@ from database import createConnection
 from views import Window
 
 
-"""QPortal main function."""
+"""Pyportal main function."""
 
 # Create the application 
 app = QApplication(sys.argv)
