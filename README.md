@@ -31,12 +31,14 @@ The program depends on the following:
 with existing python libraries.
 3. Install all the required dependencies using `pip` (e.g `pip install pyside6`).
 
-## Quick start
+## Usage
 
 To run the application simply navigate to the source code directory and run the following command:\
 `python GUI.py`
 
-### EPID positioning
+Click on `open` button and load an image (a DICOM file) to perform one of the following test. If it is the fist time, the program will ask for a reference image, defined as a set up of 10 cm x 10 cm and a source to detector distance of 100 cm. 
+
+## EPID positioning
 
   Tolerance: Vendor specification or ≤2 mm
 
@@ -54,8 +56,8 @@ Repeat the 10 cm × 10 cm image at 45° gantry angle increments. Measure the cen
 
 From the columns
 
-* SID: Source to image distance
-* G°: Gantry angle
+* SID: Source to detector distance.
+* G°: Gantry angle.
 * x (or y): Distance from beam center to the center of the panel in x (y) direction.
 * dx (or dy): Difference in x (y) with respect the first loaded data in the dataset (first row in the table).
 

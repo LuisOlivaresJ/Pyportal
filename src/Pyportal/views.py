@@ -185,7 +185,7 @@ class PositionsTab(CoreTab):
         messageBox = QMessageBox.warning(
             self,
             "Warning!",
-            "Do you want to remove the selected rwo?",
+            "Do you want to remove the selected row?",
             QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
         )
 
