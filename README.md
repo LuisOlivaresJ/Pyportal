@@ -36,7 +36,7 @@ with existing python libraries.
 To run the application simply navigate to the source code directory and run the following command:\
 `python GUI.py`
 
-Click on `open` button and load an image (a DICOM file) to perform one of the following test. If it is the fist time, the program will ask for a reference image, defined as a set up of 10 cm x 10 cm and a source to detector distance of 100 cm. 
+Click on `open` button and slect the folder/directory with the images or DICOM files (with .dcm extension) to perform one test. If it is the fist time the program is running, it will ask for a reference image. Such image should be acquired with a set up of 10 cm x 10 cm field size and a source to detector distance of 100 cm.
 
 ## EPID positioning
 
