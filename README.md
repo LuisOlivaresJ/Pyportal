@@ -88,7 +88,7 @@ After flood-field calibration, irradiate the entire EPID sensitive area with 100
 
 ![Positioning](/docs/images/Uniformity.png)
 
-* Mean: Mean pixel over the image. %5 of each border is excluded.
+* Mean: Mean pixel over the image. 7.5% of each border is excluded (3 cm and 2.25 cm for a 40 cm x 30 cm detector size).
 * STD: Standar deviation.
 * Uniformity: STD as a percentage of the mean.
 * Num. pixels: Number of pixels in the ROI.
