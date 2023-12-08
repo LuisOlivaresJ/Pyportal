@@ -9,6 +9,7 @@ from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex
 from PySide6.QtSql import QSqlTableModel
 from PySide6 import QtGui
 import pandas
+from pathlib import Path
 
 class positionsModel:
     def __init__(self):
@@ -210,9 +211,11 @@ class PandasModel(QAbstractTableModel):
                     (isinstance(value, int) or isinstance(value, float))
                     and abs(value) >= self.tolerance
                 ):
-                    return QtGui.QIcon('.\icons\cross.png')
+                    icon_path = Path.cwd() / "icons" / "cross.png"
+                    return QtGui.QIcon(str(icon_path))
                 else:
-                    return QtGui.QIcon('.\icons\\accept.png')
+                    icon_path = Path.cwd() / "icons" / "accept.png"
+                    return QtGui.QIcon(str(icon_path))
                 
         if role == Qt.FontRole:
             if index.column() in self.columns:  # change font
