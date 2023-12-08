@@ -270,7 +270,7 @@ def load_tolerances():
 
 def get_as_pd_dataframe():
     """Get database as pandas DataFrame instance."""
-    get_db_con = sqlite3.connect("positions.sqlite")
+    get_db_con = sqlite3.connect("database.sqlite")
     df = pandas.read_sql_query("SELECT * FROM positions", get_db_con)
     get_db_con.close()
 
@@ -280,7 +280,7 @@ def get_as_pd_dataframe():
 
 def get_linearity_as_pd_dataframe():
     """Get linearity database table as pandas DataFrame instance."""
-    get_db_con = sqlite3.connect("positions.sqlite")
+    get_db_con = sqlite3.connect("database.sqlite")
     df = pandas.read_sql_query("SELECT * FROM linearity", get_db_con)
     get_db_con.close()
 
@@ -290,7 +290,7 @@ def get_linearity_as_pd_dataframe():
 
 def get_uniformity_as_pd_dataframe():
     """Get uniformity database table as pandas DataFrame instance."""
-    get_db_con = sqlite3.connect("positions.sqlite")
+    get_db_con = sqlite3.connect("database.sqlite")
     df = pandas.read_sql_query("SELECT * FROM uniformity", get_db_con)
     get_db_con.close()
 

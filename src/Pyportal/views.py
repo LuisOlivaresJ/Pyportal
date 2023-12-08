@@ -50,7 +50,7 @@ class Window(QMainWindow):
         """
         super().__init__(parent)
         self.setWindowTitle("Pyportal")
-        self.resize(1000, 400)
+        self.resize(1100, 400)
 
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
@@ -154,7 +154,7 @@ class PositionsTab(CoreTab):
         # Open an image dialog to ask for a directory.
         dir = QFileDialog.getExistingDirectory(caption = "Open the folder with the images...", dir="/home")
         # Filter 
-        files = list(Path(dir).glob("RI*.dcm"))
+        files = list(Path(dir).glob("*.dcm"))
      
         for file in files:
 
@@ -277,7 +277,7 @@ class LinearityTab(CoreTab):
         # Open an image dialog to ask for a directory.
         dir = QFileDialog.getExistingDirectory(caption = "Open the folder with the images...", dir="/home")
         # Filter 
-        files = list(Path(dir).glob("RI*.dcm"))
+        files = list(Path(dir).glob("*.dcm"))
      
         # For loop for reference image identification
         for file in files:
@@ -407,7 +407,7 @@ class UniformityTab(CoreTab):
         # Open an image dialog to ask for a directory.
         dir = QFileDialog.getExistingDirectory(caption = "Open the folder with the images...", dir="/home")
         # Filter 
-        files = list(Path(dir).glob("RI*.dcm"))
+        files = list(Path(dir).glob("*.dcm"))
      
         for file in files:
 
