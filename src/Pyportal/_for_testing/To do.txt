@@ -1,6 +1,3 @@
 ---Modificar las acciones de los botones de QDialog Results 
 
-Cómo agregar segunda tabla para almacenar configuraciones
-actualizar grafica según tolerancia
-
 Si en primer inicio no se carga el archivo de referencia, se produce un error. database.py xy = getXY()

@@ -35,8 +35,11 @@ def createConnection(databaseName):
     print("SQL Connection Successfully Opened!")
     _createPositionsTable()
     _createUserToleranceTable()
+    _createLinearityTable()
+    _createUniformityTable()
     _positions_is_empty()
     _tolerances_is_empty()
+    #_linearity_is_empty()
     return True
 
 def _createPositionsTable():
@@ -57,7 +60,7 @@ def _createPositionsTable():
     )
 
 def _createUserToleranceTable():
-    """Used to create user settings like tolerances for test."""
+    """Table used to create save linearity constancy."""
     createTableQuery = QSqlQuery()
     createTableQuery.exec(
         """
@@ -71,10 +74,42 @@ def _createUserToleranceTable():
     )
     createTableQuery.finish()
 
+def _createLinearityTable():
+    """Used to create user settings like tolerances for test."""
+    createTableQuery = QSqlQuery()
+    createTableQuery.exec(
+        """
+        CREATE TABLE IF NOT EXISTS linearity (
+        date VARCHAR(25) NOT NULL,
+        mu REAL NOT NULL,
+        cu REAL NOT NULL,
+        cu_mu REAL NOT NULL,
+        variation REAL NOT NULL
+        )
+        """
+    )
+    createTableQuery.finish()
+
+def _createUniformityTable():
+    """Used to create uniformity."""
+    createTableQuery = QSqlQuery()
+    createTableQuery.exec(
+        """
+        CREATE TABLE IF NOT EXISTS uniformity (
+        Date VARCHAR(25) NOT NULL,
+        Mean REAL NOT NULL,
+        STD REAL NOT NULL,
+        Uniformity REAL NOT NULL,
+        Num_pixels REAL NOT NULL
+        )
+        """
+    )
+    createTableQuery.finish()
+
 def _positions_is_empty():
     """ 
     If there are no fields in the record database, opens a QDialog window to ask for a file that is going to be 
-    used to get the reference portal position, saving it as the first row. Otherwise, returns 
+    used to set the reference portal position, saving it as the first row. Otherwise, returns 
     """
     isEmptyQuery = QSqlQuery()
     isEmptyQuery.exec("SELECT Date, SID, Gantry, x, y, dx, dy FROM positions")
@@ -116,6 +151,23 @@ def _positions_is_empty():
 
     else:
         return
+
+def _linearity_is_empty():
+    """ 
+    If there are no fields in the record database, returns True
+    """
+    isEmptyQuery = QSqlQuery()
+    isEmptyQuery.exec("SELECT * FROM linearity")
+    return isEmptyQuery.first()
+
+def _uniformity_is_empty():
+    """ 
+    If there are no fields in the record database, returns True
+    """
+    isEmptyQuery = QSqlQuery()
+    isEmptyQuery.exec("SELECT * FROM uniformity")
+    return isEmptyQuery.first()
+
 def _tolerances_is_empty():
     """ 
     Set default tolerances when app is first used. 
@@ -218,10 +270,30 @@ def load_tolerances():
 
 def get_as_pd_dataframe():
     """Get database as pandas DataFrame instance."""
-    get_db_con = sqlite3.connect("positions.sqlite")
+    get_db_con = sqlite3.connect("database.sqlite")
     df = pandas.read_sql_query("SELECT * FROM positions", get_db_con)
     get_db_con.close()
 
 
-    df["Date"] = pandas.to_datetime(df["Date"], format = "ISO8601")
+    df["Date"] = pandas.to_datetime(df["Date"], format="%Y-%m-%d")
+    return df
+
+def get_linearity_as_pd_dataframe():
+    """Get linearity database table as pandas DataFrame instance."""
+    get_db_con = sqlite3.connect("database.sqlite")
+    df = pandas.read_sql_query("SELECT * FROM linearity", get_db_con)
+    get_db_con.close()
+
+
+    df["date"] = pandas.to_datetime(df["date"], format="%Y-%m-%d")
+    return df
+
+def get_uniformity_as_pd_dataframe():
+    """Get uniformity database table as pandas DataFrame instance."""
+    get_db_con = sqlite3.connect("database.sqlite")
+    df = pandas.read_sql_query("SELECT * FROM uniformity", get_db_con)
+    get_db_con.close()
+
+
+    df["Date"] = pandas.to_datetime(df["Date"], format="%Y-%m-%d")
     return df
